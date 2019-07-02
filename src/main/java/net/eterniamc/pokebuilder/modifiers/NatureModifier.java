@@ -10,8 +10,8 @@ import com.pixelmonmod.pixelmon.config.PixelmonItemsBadges;
 import com.pixelmonmod.pixelmon.config.PixelmonItemsHeld;
 import com.pixelmonmod.pixelmon.enums.EnumNature;
 import com.pixelmonmod.pixelmon.enums.EnumSpecies;
+import net.eterniamc.pokebuilder.Configuration.Config;
 import net.eterniamc.pokebuilder.ModifierData;
-import net.eterniamc.pokebuilder.PokeBuilder;
 import net.eterniamc.pokebuilder.Utils;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.living.player.Player;
@@ -32,21 +32,19 @@ public class NatureModifier implements Modifier {
     public boolean run(ModifierData data) {
         Pokemon pixelmon = data.getPokemon();
         Player player = data.getPlayer();
-        StateContainer container = data.getGui() == null ? new StateContainer() : data.getGui();
+        StateContainer container = data.getGui();
         if (container.hasState("nature"))
             container.removeState("nature");
-        Page.PageBuilder builder = Page.builder()
+        Page.PageBuilder natureModifier = Page.builder()
                 .setAutoPaging(true)
                 .setTitle(Text.of("Nature Modifier"))
                 .setParent("editor")
                 .setEmptyStack(Utils.empty());
-        if (data.getGui() == null)
-            builder.setParent(null);
         for (EnumNature nature : EnumNature.values())
-            builder.addElement(new ActionableElement(
+            natureModifier.addElement(new ActionableElement(
                             new RunnableAction(container, ActionType.CLOSE, "", context -> {
                                 pixelmon.setNature(nature);
-                                Utils.withdraw(player, PokeBuilder.config.natureModifierCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1));
+                                Utils.withdraw(player, Config.natureModifierCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
                             }),
                             ItemStack.builder()
                                     .itemType((ItemType) PixelmonItemsBadges.voltageBadge)
@@ -55,7 +53,7 @@ public class NatureModifier implements Modifier {
                                     .build()
                     )
             );
-        container.addState(builder.build("nature"));
+        container.addState(natureModifier.build("nature"));
         container.openState(player, "nature");
         return false;
     }
@@ -67,6 +65,6 @@ public class NatureModifier implements Modifier {
 
     @Override
     public double getCost(Pokemon pokemon) {
-        return PokeBuilder.config.natureModifierCost * getMultiplier(pokemon);
+        return Config.natureModifierCost * getMultiplier(pokemon);
     }
 }

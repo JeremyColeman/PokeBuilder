@@ -2,8 +2,8 @@ package net.eterniamc.pokebuilder.modifiers;
 
 import com.pixelmonmod.pixelmon.api.pokemon.Pokemon;
 import com.pixelmonmod.pixelmon.config.PixelmonItemsHeld;
+import net.eterniamc.pokebuilder.Configuration.Config;
 import net.eterniamc.pokebuilder.ModifierData;
-import net.eterniamc.pokebuilder.PokeBuilder;
 import org.spongepowered.api.item.ItemType;
 
 /**
@@ -25,6 +25,6 @@ public class MaxHappinessModifier implements Modifier {
 
     @Override
     public double getCost(Pokemon pokemon) {
-        return PokeBuilder.config.maxHappinessModifierCost * getMultiplier(pokemon);
+        return Config.maxHappinessModifierCost * getMultiplier(pokemon);
     }
 }

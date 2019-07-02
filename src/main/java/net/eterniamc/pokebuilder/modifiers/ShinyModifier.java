@@ -1,8 +1,8 @@
 package net.eterniamc.pokebuilder.modifiers;
 
 import com.pixelmonmod.pixelmon.api.pokemon.Pokemon;
+import net.eterniamc.pokebuilder.Configuration.Config;
 import net.eterniamc.pokebuilder.ModifierData;
-import net.eterniamc.pokebuilder.PokeBuilder;
 import net.eterniamc.pokebuilder.Utils;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.ItemType;
@@ -28,7 +28,7 @@ public class ShinyModifier implements Modifier {
 
     @Override
     public double getCost(Pokemon pokemon) {
-        return PokeBuilder.config.shinyModifierCost * getMultiplier(pokemon);
+        return Config.shinyModifierCost * getMultiplier(pokemon);
     }
 
     @Override

@@ -14,6 +14,7 @@ import java.util.function.Consumer;
 /**
  * Utility for allowing players to enter input into modifiers thru chat
  */
+
 public class ChatGuiHelper {
     private static HashMap<UUID, Consumer<Text>> guis = new HashMap<>();
 
@@ -27,8 +28,7 @@ public class ChatGuiHelper {
         Optional.ofNullable(guis.get(src.getUniqueId())).ifPresent(action -> {
             event.setCancelled(true);
             guis.remove(src.getUniqueId());
-            if (event.getRawMessage().toPlain().equals("cancel"))
-                return;
+            if (event.getRawMessage().toPlain().equals("cancel")) return;
             action.accept(event.getRawMessage());
         });
     }

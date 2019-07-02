@@ -18,7 +18,6 @@ plugins {
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'java'
-apply plugin: 'eclipse'
 
 
 sourceCompatibility = 1.8
@@ -29,14 +28,21 @@ archivesBaseName = pluginName
 sponge.plugin.id = pluginId
 
 minecraft {
-    version = "1.12.2-14.23.1.2555"
+    version = "1.12.2-14.23.5.2768"
     runDir = "run"
 
-    mappings = "snapshot_20171226"
+    mappings = "stable_39"
+}
+
+repositories {
+    maven {
+        name 'JitPack'
+        url 'https://jitpack.io/'
+    }
 }
 
 dependencies {
-    compile 'org.spongepowered:spongeapi:7.0.0-SNAPSHOT'
-    compile files('../Pixelmon-7.jar')
-    compile files('../HuskyUI.jar')
+    compile 'org.spongepowered:spongeapi:7.1.0-SNAPSHOT'
+    compile 'com.github.codeHusky:HuskyUI-Plugin:v0.6.0-PRE4'
+    compile fileTree(dir: 'libs', include: '*.jar')
 }
