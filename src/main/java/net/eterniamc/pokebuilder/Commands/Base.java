@@ -12,19 +12,19 @@ import org.spongepowered.api.text.Text;
 
 public class Base implements CommandExecutor {
 
-    @Override
-    public CommandResult execute(CommandSource src, CommandContext args) {
-        Player player = src.hasPermission("pokebuilder.other") ? args.<Player>getOne("player").get() : (Player) src;
-        PokeBuilderGui.openGui(player);
-        return CommandResult.success();
-    }
-
     public static CommandSpec getSpec() {
         return CommandSpec.builder()
-                .permission("pokebuilder")
+                .permission("pokebuilder.gui")
                 .arguments(GenericArguments.playerOrSource(Text.of("player")))
                 .executor(new Base())
                 .build();
+    }
+
+    @Override
+    public CommandResult execute(CommandSource src, CommandContext args) {
+        Player player = src.hasPermission("pokebuilder.gui.other") ? args.<Player>getOne("player").get() : (Player) src;
+        PokeBuilderGui.openGui(player);
+        return CommandResult.success();
     }
 
 }

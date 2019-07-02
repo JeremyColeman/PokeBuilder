@@ -32,8 +32,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static net.eterniamc.pokebuilder.PokeBuilder.*;
-
 /**
  * Created by Justin
  */

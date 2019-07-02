@@ -1,8 +1,6 @@
 package net.eterniamc.pokebuilder.modifiers;
 
 import com.pixelmonmod.pixelmon.api.pokemon.Pokemon;
-import com.pixelmonmod.pixelmon.enums.EnumSpecies;
-import net.eterniamc.pokebuilder.Configuration.Config;
 import net.eterniamc.pokebuilder.ModifierData;
 import net.eterniamc.pokebuilder.PokeBuilder;
 import net.eterniamc.pokebuilder.Utils;
@@ -13,7 +11,6 @@ import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
-import java.util.Arrays;
 import java.util.Collections;
 
 /**
@@ -42,6 +39,6 @@ public interface Modifier {
     }
 
     default double getMultiplier(Pokemon pokemon) {
-        return (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pokemon.getSpecies() == p) || pokemon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1);
+        return getMultiplier(pokemon);
     }
 }

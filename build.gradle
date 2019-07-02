@@ -45,4 +45,5 @@ dependencies {
     compile 'org.spongepowered:spongeapi:7.1.0-SNAPSHOT'
     compile 'com.github.codeHusky:HuskyUI-Plugin:v0.6.0-PRE4'
     compile fileTree(dir: 'libs', include: '*.jar')
+    compile files('../Pixelmon-7.jar')
 }
