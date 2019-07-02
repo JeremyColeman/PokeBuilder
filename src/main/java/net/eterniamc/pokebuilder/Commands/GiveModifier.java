@@ -20,16 +20,12 @@ public class GiveModifier implements CommandExecutor {
         return CommandSpec.builder()
                 .permission("pokebuilder.modifier.give")
                 .arguments(
-                        GenericArguments.playerOrSource(Text.of("player")),
                         GenericArguments.choices(
                                 Text.of("modifier"),
                                 () -> PokeBuilder.getModifiers().stream().map(m -> m.getClass().getSimpleName().replace("Modifier", "")).collect(Collectors.toList()),
-                                s -> {
-                                    Optional<Modifier> optionalModifier = PokeBuilder.getModifiers().stream().filter(m -> m.getClass().getSimpleName().replace("Modifier", "").equals(s)).findFirst();
-                                    if (!optionalModifier.isPresent()) return Optional.empty();
-                                    return optionalModifier.get();
-                                }
-                        )
+                                s -> PokeBuilder.getModifiers().stream().filter(m -> m.getClass().getSimpleName().replace("Modifier", "").equalsIgnoreCase(s)).findFirst()
+                        ),
+                        GenericArguments.playerOrSource(Text.of("player"))
                 )
                 .executor(new GiveModifier())
                 .build();
@@ -38,8 +34,7 @@ public class GiveModifier implements CommandExecutor {
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) {
         Player player = args.<Player>getOne("player").get();
-        Modifier modifier = args.<Modifier>getOne("modifier").get();
-        player.getInventory().offer(modifier.getItemStack(player, null));
-        return CommandResult.success();
+        Modifier modifier = args.<Optional<Modifier>>getOne("modifier").get().orElseThrow(() -> new Error("Could not find the modifier that matches the name you entered."));
+        return player.getInventory().offer(modifier.getItemStack(player, null)).getRejectedItems().isEmpty() ? CommandResult.success() : CommandResult.empty();
     }
 }
