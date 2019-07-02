@@ -59,8 +59,12 @@ public class MoveModifier implements Modifier {
                                 for (Attack attack : pixelmon.getBaseStats().getAllMoves().stream().filter(s -> !pixelmon.getMoveset().contains(s)).collect(Collectors.toList()))
                                     moveSlot.addElement(new ActionableElement(
                                                     new RunnableAction(container, ActionType.CLOSE, "", action -> {
+                                                        double cost = Config.moveModifierCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1);
+                                                        if (!Utils.withdrawBalance(player, cost)) {
+                                                            Utils.sendPlayerError(player, "You can't afford this!");
+                                                            return;
+                                                        }
                                                         pixelmon.getMoveset().set(i, attack);
-                                                        Utils.withdraw(player, Config.moveModifierCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
                                                         if (((EntityPlayerMP) player).getHeldItemMainhand().getCount() == 1)
                                                             ((EntityPlayerMP) player).setHeldItem(EnumHand.MAIN_HAND, net.minecraft.item.ItemStack.EMPTY);
                                                         ((EntityPlayerMP) player).getHeldItemMainhand().shrink(1);

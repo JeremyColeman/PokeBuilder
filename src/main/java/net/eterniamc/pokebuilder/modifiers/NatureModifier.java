@@ -43,8 +43,12 @@ public class NatureModifier implements Modifier {
         for (EnumNature nature : EnumNature.values())
             natureModifier.addElement(new ActionableElement(
                             new RunnableAction(container, ActionType.CLOSE, "", context -> {
+                                double cost = Config.natureModifierCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1);
+                                if (!Utils.withdrawBalance(player, cost)) {
+                                    Utils.sendPlayerError(player, "You can't afford this!");
+                                    return;
+                                }
                                 pixelmon.setNature(nature);
-                                Utils.withdraw(player, Config.natureModifierCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
                             }),
                             ItemStack.builder()
                                     .itemType((ItemType) PixelmonItemsBadges.voltageBadge)

@@ -47,8 +47,12 @@ public class GrowthModifier implements Modifier {
         for (EnumGrowth growth : growths)
             natureModifier.addElement(new ActionableElement(
                             new RunnableAction(container, ActionType.CLOSE, "", context -> {
+                                double cost = Config.growthModifierCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1);
+                                if (!Utils.withdrawBalance(player, cost)) {
+                                    Utils.sendPlayerError(player, "You can't afford this!");
+                                    return;
+                                }
                                 pixelmon.setGrowth(growth);
-                                Utils.withdraw(player, Config.growthModifierCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
 
                             }),
                             ItemStack.builder()

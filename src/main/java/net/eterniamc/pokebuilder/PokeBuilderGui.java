@@ -32,8 +32,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static net.eterniamc.pokebuilder.PokeBuilder.*;
-
 /**
  * Created by Justin
  */
@@ -76,10 +74,6 @@ public class PokeBuilderGui {
             } else {
                 main.addElement(new ActionableElement(
                         new RunnableAction(container, ActionType.CLOSE, "", c -> {
-                            double cash = Utils.getBal(player);
-                            if (cash < Config.pokemonCost && cash < Config.legendaryCost)
-                                Utils.sendPlayerError(player, "You can't afford this!");
-                            else {
                                 ChatGuiHelper.addGUI("Enter the name of the pokemon you want, regular pokemon getCost(pokemon) $" + Config.pokemonCost + " and legendaries getCost(pokemon) $" + Config.legendaryCost, player, text -> {
                                     EnumSpecies pokemon = EnumSpecies.getFromNameAnyCase(text.toPlain());
                                     Pokemon pixelmon1 = Pixelmon.pokemonFactory.create(pokemon);
@@ -87,14 +81,17 @@ public class PokeBuilderGui {
                                         Utils.sendPlayerError(player, "Invalid Pokemon");
                                         return;
                                     } else if (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> p == pokemon)) {
-                                        Utils.withdraw(player, Config.legendaryCost);
-                                    } else {
-                                        Utils.withdraw(player, Config.pokemonCost);
+                                        if (!Utils.withdrawBalance(player, Config.legendaryCost)) {
+                                            Utils.sendPlayerError(player, "You can't afford this!");
+                                            return;
+                                        }
+                                    } else if (!Utils.withdrawBalance(player, Config.pokemonCost)) {
+                                        Utils.sendPlayerError(player, "You can't afford this!");
+                                        return;
                                     }
                                     pixelmon1.setOriginalTrainer((EntityPlayerMP) player);
                                     store.add(pixelmon1);
                                 });
-                            }
                         }),
                         ItemStack.builder()
                                 .itemType((ItemType) PixelmonItemsPokeballs.pokeBall)
@@ -157,9 +154,8 @@ public class PokeBuilderGui {
             else
                 builder.putElement(i / 2 * 9 + i % 2 * 8, new ActionableElement(
                         new RunnableAction(container, ActionType.NONE, "", c -> {
-                            if (modifier.getCost(pokemon) <= Utils.getBal(player)) {
+                            if (!Utils.withdrawBalance(player, modifier.getCost(pokemon))) {
                                 if (modifier.run(new ModifierData(pokemon, player, container))) {
-                                    Utils.withdraw(player, modifier.getCost(pokemon));
                                     if (!player.getOpenInventory().isPresent())
                                         container.openState(player, "editor");
                                     player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(22)).ifPresent(inv ->

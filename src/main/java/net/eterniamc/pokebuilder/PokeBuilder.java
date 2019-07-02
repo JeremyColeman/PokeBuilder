@@ -25,6 +25,7 @@ import org.spongepowered.api.event.game.state.GamePostInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
+import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.service.economy.Currency;
 import org.spongepowered.api.service.economy.EconomyService;
 
@@ -51,6 +52,8 @@ public class PokeBuilder {
     private static Currency currency;
     @Inject
     private Logger logger;
+    @Inject
+    private PluginContainer container;
 
     @Inject
     @DefaultConfig(sharedRoot = false)
@@ -58,6 +61,10 @@ public class PokeBuilder {
 
     public static PokeBuilder getInstance() {
         return instance;
+    }
+
+    public static PluginContainer getContainer() {
+        return instance.container;
     }
 
     public static List<Modifier> getModifiers() {

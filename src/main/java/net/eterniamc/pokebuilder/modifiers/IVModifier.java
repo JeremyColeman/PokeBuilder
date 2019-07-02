@@ -130,9 +130,8 @@ public class IVModifier implements Modifier {
                     builder.putElement(i + 2, new ActionableElement(
                                     new RunnableAction(container, ActionType.NONE, "", c -> {
                                         try {
-                                            if (Utils.getBal(player) >= getCost(pokemon, type) && (Integer) field.get(pokemon.getEVs()) + 1 <= IVStore.MAX_IVS) {
+                                            if (!Utils.withdrawBalance(player, getCost(pokemon, type)) && (Integer) field.get(pokemon.getEVs()) + 1 <= IVStore.MAX_IVS) {
                                                 field.set(pokemon.getEVs(), ((Integer) field.get(pokemon.getEVs())) + 1);
-                                                Utils.withdraw(player, getCost(pokemon, type));
                                                 player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(0)).ifPresent(inv -> {
                                                             try {
                                                                 inv.set(ItemStack.builder()
@@ -146,7 +145,7 @@ public class IVModifier implements Modifier {
                                                             }
                                                         }
                                                 );
-                                            }
+                                            } else Utils.sendPlayerError(player, "You can't afford this!");
                                         } catch (Exception e) {
                                             e.printStackTrace();
                                         }
@@ -165,9 +164,8 @@ public class IVModifier implements Modifier {
                     builder.putElement(i + 3, new ActionableElement(
                                     new RunnableAction(container, ActionType.NONE, "", c -> {
                                         try {
-                                            if (Utils.getBal(player) >= getCost(pokemon, type) && (Integer) field.get(pokemon.getEVs()) + 10 <= IVStore.MAX_IVS) {
+                                            if (Utils.withdrawBalance(player, getCost(pokemon, type)) && (Integer) field.get(pokemon.getEVs()) + 10 <= IVStore.MAX_IVS) {
                                                 field.set(pokemon.getEVs(), ((Integer) field.get(pokemon.getEVs())) + 1);
-                                                Utils.withdraw(player, getCost(pokemon, type));
                                                 player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(0)).ifPresent(inv -> {
                                                             try {
                                                                 inv.set(ItemStack.builder()
@@ -181,7 +179,7 @@ public class IVModifier implements Modifier {
                                                             }
                                                         }
                                                 );
-                                            }
+                                            } else Utils.sendPlayerError(player, "You can't afford this!");
                                         } catch (Exception e) {
                                             e.printStackTrace();
                                         }
@@ -207,8 +205,8 @@ public class IVModifier implements Modifier {
         if (Config.rerollIvsCost > 0) {
             builder.putElement(24, new ActionableElement(
                     new RunnableAction(container, ActionType.NONE, "", c -> {
-                        if (Utils.getBal(player) >= Config.rerollIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pokemon.getSpecies() == p) || pokemon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1)) {
-                            Utils.withdraw(player, Config.rerollIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pokemon.getSpecies() == p) || pokemon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
+                        double cost = Config.rerollIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pokemon.getSpecies() == p) || pokemon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1);
+                        if (Utils.withdrawBalance(player, cost)) {
                             pokemon.getStats().ivs = IVStore.CreateNewIVs();
                             player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(45)).ifPresent(inv ->
                                     inv.set(ItemStack.builder()
@@ -258,7 +256,7 @@ public class IVModifier implements Modifier {
                                             .build()
                                     )
                             );
-                        }
+                        } else Utils.sendPlayerError(player, "You can't afford this!");
                     }),
                     ItemStack.builder()
                             .itemType((ItemType) PixelmonItems.potion)
@@ -273,8 +271,8 @@ public class IVModifier implements Modifier {
         if (Config.maxIvsCost > 0) {
             builder.putElement(33, new ActionableElement(
                     new RunnableAction(container, ActionType.NONE, "", c -> {
-                        if (Utils.getBal(player) >= Config.maxIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pokemon.getSpecies() == p) || pokemon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1)) {
-                            Utils.withdraw(player, Config.maxIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pokemon.getSpecies() == p) || pokemon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
+                        double cost = Config.maxIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pokemon.getSpecies() == p) || pokemon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1);
+                        if (Utils.withdrawBalance(player, cost)) {
                             pokemon.getIVs().maximizeIVs();
                             player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(45)).ifPresent(inv ->
                                     inv.set(ItemStack.builder()
@@ -324,7 +322,7 @@ public class IVModifier implements Modifier {
                                             .build()
                                     )
                             );
-                        }
+                        } else Utils.sendPlayerError(player, "You can't afford this!");
                     }),
                     ItemStack.builder()
                             .itemType((ItemType) PixelmonItems.maxPotion)
