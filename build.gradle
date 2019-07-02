@@ -1,0 +1,42 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            name = "forge"
+            url = "http://files.minecraftforge.net/maven"
+        }
+        maven {
+            url = 'https://oss.sonatype.org/content/groups/public'
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+    }
+}
+plugins {
+    id 'org.spongepowered.plugin' version '0.8.1'
+}
+apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+group = pluginGroup
+version = pluginVersion
+archivesBaseName = pluginName
+sponge.plugin.id = pluginId
+
+minecraft {
+    version = "1.12.2-14.23.1.2555"
+    runDir = "run"
+
+    mappings = "snapshot_20171226"
+}
+
+dependencies {
+    compile 'org.spongepowered:spongeapi:7.0.0-SNAPSHOT'
+    compile files('../Pixelmon-7.jar')
+    compile files('../HuskyUI.jar')
+}
