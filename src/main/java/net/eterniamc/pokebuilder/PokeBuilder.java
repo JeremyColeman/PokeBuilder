@@ -50,7 +50,8 @@ public class PokeBuilder {
     private static List<Modifier> modifiers;
     private static Currency currency;
     @Inject
-    public Logger logger;
+    private Logger logger;
+
     @Inject
     @DefaultConfig(sharedRoot = false)
     private ConfigurationLoader<CommentedConfigurationNode> loader;
