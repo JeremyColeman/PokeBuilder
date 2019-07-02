@@ -60,11 +60,11 @@ public class Utils {
 
     public static void withdraw(Player player, double amount) {
         EconomyService es = Sponge.getServiceManager().provideUnchecked(EconomyService.class);
-        es.getOrCreateAccount(player.getUniqueId()).ifPresent(a -> a.withdraw(PokeBuilder.instance.currency, new BigDecimal(amount), Cause.of(EventContext.empty(), PokeBuilder.instance)));
+        es.getOrCreateAccount(player.getUniqueId()).ifPresent(a -> a.withdraw(PokeBuilder.currency, new BigDecimal(amount), Cause.of(EventContext.empty(), PokeBuilder.instance)));
     }
 
     public static double getBal(Player player) {
         EconomyService es = Sponge.getServiceManager().provideUnchecked(EconomyService.class);
-        return es.getOrCreateAccount(player.getUniqueId()).map(a -> a.getBalance(PokeBuilder.instance.currency).doubleValue()).orElse(0.0);
+        return es.getOrCreateAccount(player.getUniqueId()).map(a -> a.getBalance(PokeBuilder.currency).doubleValue()).orElse(0.0);
     }
 }

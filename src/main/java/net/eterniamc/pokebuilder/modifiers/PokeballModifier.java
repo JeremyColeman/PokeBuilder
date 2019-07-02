@@ -31,19 +31,21 @@ public class PokeballModifier implements Modifier {
     public boolean run(ModifierData data) {
         Pokemon pixelmon = data.getPokemon();
         Player player = data.getPlayer();
-        StateContainer container = data.getGui();
+        StateContainer container = data.getGui() == null ? new StateContainer() : data.getGui();
         if (container.hasState("pokeball"))
             container.removeState("pokeball");
-        Page.PageBuilder natureModifier = Page.builder()
+        Page.PageBuilder builder = Page.builder()
                 .setAutoPaging(true)
                 .setTitle(Text.of("Pokeball Modifier"))
                 .setParent("editor")
                 .setEmptyStack(Utils.empty());
+        if (data.getGui() == null)
+            builder.setParent(null);
         for (EnumPokeballs ball : EnumPokeballs.values())
-            natureModifier.addElement(new ActionableElement(
+            builder.addElement(new ActionableElement(
                             new RunnableAction(container, ActionType.CLOSE, "", context -> {
                                 pixelmon.setCaughtBall(ball);
-                                Utils.withdraw(player, PokeBuilder.instance.config.pokeballModifierCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.instance.config.legendaryOrDittoMultiplier : 1));
+                                Utils.withdraw(player, PokeBuilder.config.pokeballModifierCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1));
 
                             }),
                             ItemStack.builder()
@@ -53,7 +55,7 @@ public class PokeballModifier implements Modifier {
                                     .build()
                     )
             );
-        container.addState(natureModifier.build("pokeball"));
+        container.addState(builder.build("pokeball"));
         container.openState(player, "pokeball");
         return false;
     }
@@ -65,6 +67,6 @@ public class PokeballModifier implements Modifier {
 
     @Override
     public double getCost(Pokemon pokemon) {
-        return PokeBuilder.instance.config.pokeballModifierCost * getMultiplier(pokemon);
+        return PokeBuilder.config.pokeballModifierCost * getMultiplier(pokemon);
     }
 }

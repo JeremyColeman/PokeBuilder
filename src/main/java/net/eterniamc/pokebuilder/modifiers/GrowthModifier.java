@@ -34,21 +34,23 @@ public class GrowthModifier implements Modifier {
     public boolean run(ModifierData data) {
         Pokemon pixelmon = data.getPokemon();
         Player player = data.getPlayer();
-        StateContainer container = data.getGui();
+        StateContainer container = data.getGui() == null ? new StateContainer() : data.getGui();
         if (container.hasState("growth"))
             container.removeState("growth");
-        Page.PageBuilder natureModifier = Page.builder()
+        Page.PageBuilder builder = Page.builder()
                 .setAutoPaging(true)
                 .setTitle(Text.of("Growth Modifier"))
                 .setParent("editor")
                 .setEmptyStack(Utils.empty());
+        if (data.getGui() == null)
+            builder.setParent(null);
         List<EnumGrowth> growths = new ArrayList<>(Arrays.asList(EnumGrowth.values()));
         growths.sort((growth1, growth2) -> growth1.scaleValue - growth2.scaleValue > 0 ? 1 : growth1.scaleValue - growth2.scaleValue < 0 ? -1 : 0);
         for (EnumGrowth growth : growths)
-            natureModifier.addElement(new ActionableElement(
+            builder.addElement(new ActionableElement(
                             new RunnableAction(container, ActionType.CLOSE, "", context -> {
                                 pixelmon.setGrowth(growth);
-                                Utils.withdraw(player, PokeBuilder.instance.config.growthModifierCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.instance.config.legendaryOrDittoMultiplier : 1));
+                                Utils.withdraw(player, PokeBuilder.config.growthModifierCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1));
 
                             }),
                             ItemStack.builder()
@@ -58,7 +60,7 @@ public class GrowthModifier implements Modifier {
                                     .build()
                     )
             );
-        container.addState(natureModifier.build("growth"));
+        container.addState(builder.build("growth"));
         container.openState(player, "growth");
         return false;
     }
@@ -70,6 +72,6 @@ public class GrowthModifier implements Modifier {
 
     @Override
     public double getCost(Pokemon pokemon) {
-        return PokeBuilder.instance.config.growthModifierCost * getMultiplier(pokemon);
+        return PokeBuilder.config.growthModifierCost * getMultiplier(pokemon);
     }
 }

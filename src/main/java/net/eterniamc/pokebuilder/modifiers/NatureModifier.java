@@ -32,19 +32,21 @@ public class NatureModifier implements Modifier {
     public boolean run(ModifierData data) {
         Pokemon pixelmon = data.getPokemon();
         Player player = data.getPlayer();
-        StateContainer container = data.getGui();
+        StateContainer container = data.getGui() == null ? new StateContainer() : data.getGui();
         if (container.hasState("nature"))
             container.removeState("nature");
-        Page.PageBuilder natureModifier = Page.builder()
+        Page.PageBuilder builder = Page.builder()
                 .setAutoPaging(true)
                 .setTitle(Text.of("Nature Modifier"))
                 .setParent("editor")
                 .setEmptyStack(Utils.empty());
+        if (data.getGui() == null)
+            builder.setParent(null);
         for (EnumNature nature : EnumNature.values())
-            natureModifier.addElement(new ActionableElement(
+            builder.addElement(new ActionableElement(
                             new RunnableAction(container, ActionType.CLOSE, "", context -> {
                                 pixelmon.setNature(nature);
-                                Utils.withdraw(player, PokeBuilder.instance.config.natureModifierCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.instance.config.legendaryOrDittoMultiplier : 1));
+                                Utils.withdraw(player, PokeBuilder.config.natureModifierCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1));
                             }),
                             ItemStack.builder()
                                     .itemType((ItemType) PixelmonItemsBadges.voltageBadge)
@@ -53,7 +55,7 @@ public class NatureModifier implements Modifier {
                                     .build()
                     )
             );
-        container.addState(natureModifier.build("nature"));
+        container.addState(builder.build("nature"));
         container.openState(player, "nature");
         return false;
     }
@@ -65,6 +67,6 @@ public class NatureModifier implements Modifier {
 
     @Override
     public double getCost(Pokemon pokemon) {
-        return PokeBuilder.instance.config.natureModifierCost * getMultiplier(pokemon);
+        return PokeBuilder.config.natureModifierCost * getMultiplier(pokemon);
     }
 }

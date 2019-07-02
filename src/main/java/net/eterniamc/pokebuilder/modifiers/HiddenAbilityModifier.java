@@ -7,7 +7,6 @@ import net.eterniamc.pokebuilder.PokeBuilder;
 import net.eterniamc.pokebuilder.Utils;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.ItemType;
-import org.spongepowered.api.item.ItemTypes;
 
 /**
  * Created by Justin
@@ -34,6 +33,6 @@ public class HiddenAbilityModifier implements Modifier {
 
     @Override
     public double getCost(Pokemon pokemon) {
-        return PokeBuilder.instance.config.hiddenAbilityModifierCost * getMultiplier(pokemon);
+        return PokeBuilder.config.hiddenAbilityModifierCost * getMultiplier(pokemon);
     }
 }
