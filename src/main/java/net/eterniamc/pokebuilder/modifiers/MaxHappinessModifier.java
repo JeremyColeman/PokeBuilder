@@ -25,6 +25,6 @@ public class MaxHappinessModifier implements Modifier {
 
     @Override
     public double getCost(Pokemon pokemon) {
-        return PokeBuilder.instance.config.maxHappinessModifierCost * getMultiplier(pokemon);
+        return PokeBuilder.config.maxHappinessModifierCost * getMultiplier(pokemon);
     }
 }

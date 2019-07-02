@@ -37,18 +37,20 @@ public class MoveModifier implements Modifier {
     public boolean run(ModifierData data) {
         Pokemon pixelmon = data.getPokemon();
         Player player = data.getPlayer();
-        StateContainer container = data.getGui();
+        StateContainer container = data.getGui() == null ? new StateContainer() : data.getGui();
         if (container.hasState("move"))
             container.removeState("move");
-        Page.PageBuilder natureModifier = Page.builder()
+        Page.PageBuilder builder = Page.builder()
                 .setTitle(Text.of("Move Modifier"))
                 .setAutoPaging(true)
                 .setParent("editor")
                 .setEmptyStack(Utils.empty());
+        if (data.getGui() == null)
+            builder.setParent(null);
         for (int it = 0; it < 4; it++) {
             final int i = it;
-            natureModifier.addElement(new Element(ItemStack.empty()));
-            natureModifier.addElement(
+            builder.addElement(new Element(ItemStack.empty()));
+            builder.addElement(
                     new ActionableElement(
                             new RunnableAction(container, ActionType.NONE, "", context -> {
                                 Page.PageBuilder moveSlot = Page.builder()
@@ -60,7 +62,7 @@ public class MoveModifier implements Modifier {
                                     moveSlot.addElement(new ActionableElement(
                                                     new RunnableAction(container, ActionType.CLOSE, "", action -> {
                                                         pixelmon.getMoveset().set(i, attack);
-                                                        Utils.withdraw(player, PokeBuilder.instance.config.moveModifierCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.instance.config.legendaryOrDittoMultiplier : 1));
+                                                        Utils.withdraw(player, PokeBuilder.config.moveModifierCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1));
                                                         if (((EntityPlayerMP) player).getHeldItemMainhand().getCount() == 1)
                                                             ((EntityPlayerMP) player).setHeldItem(EnumHand.MAIN_HAND, net.minecraft.item.ItemStack.EMPTY);
                                                         ((EntityPlayerMP) player).getHeldItemMainhand().shrink(1);
@@ -89,7 +91,7 @@ public class MoveModifier implements Modifier {
                     )
             );
         }
-        container.addState(natureModifier.build("move"));
+        container.addState(builder.build("move"));
         container.openState(player, "move");
         return false;
     }
@@ -101,6 +103,6 @@ public class MoveModifier implements Modifier {
 
     @Override
     public double getCost(Pokemon pokemon) {
-        return PokeBuilder.instance.config.moveModifierCost * getMultiplier(pokemon);
+        return PokeBuilder.config.moveModifierCost * getMultiplier(pokemon);
     }
 }

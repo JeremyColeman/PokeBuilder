@@ -32,19 +32,21 @@ public class GenderModifier implements Modifier {
     public boolean run(ModifierData data) {
         Pokemon pixelmon = data.getPokemon();
         Player player = data.getPlayer();
-        StateContainer container = data.getGui();
+        StateContainer container = data.getGui() == null ? new StateContainer() : data.getGui();
         if (container.hasState("gender"))
             container.removeState("gender");
-        Page.PageBuilder natureModifier = Page.builder()
+        Page.PageBuilder builder = Page.builder()
                 .setAutoPaging(true)
                 .setTitle(Text.of("Gender Modifier"))
                 .setParent("editor")
                 .setEmptyStack(Utils.empty());
+        if (data.getGui() == null)
+            builder.setParent(null);
         for (Gender gender : pixelmon.getBaseStats().malePercent < 0 ? Collections.singletonList(Gender.None) : Arrays.asList(Gender.Female, Gender.Male))
-            natureModifier.addElement(new ActionableElement(
+            builder.addElement(new ActionableElement(
                             new RunnableAction(container, ActionType.CLOSE, "", context -> {
                                 pixelmon.setGender(gender);
-                                Utils.withdraw(player, PokeBuilder.instance.config.genderModifierCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.instance.config.legendaryOrDittoMultiplier : 1));
+                                Utils.withdraw(player, PokeBuilder.config.genderModifierCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1));
 
                             }),
                             ItemStack.builder()
@@ -54,7 +56,7 @@ public class GenderModifier implements Modifier {
                                     .build()
                     )
             );
-        container.addState(natureModifier.build("gender"));
+        container.addState(builder.build("gender"));
         container.openState(player, "gender");
         return false;
     }
@@ -66,6 +68,6 @@ public class GenderModifier implements Modifier {
 
     @Override
     public double getCost(Pokemon pokemon) {
-        return PokeBuilder.instance.config.genderModifierCost * getMultiplier(pokemon);
+        return PokeBuilder.config.genderModifierCost * getMultiplier(pokemon);
     }
 }
