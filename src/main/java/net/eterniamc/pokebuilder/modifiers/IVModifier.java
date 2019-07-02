@@ -12,6 +12,7 @@ import com.pixelmonmod.pixelmon.config.PixelmonItems;
 import com.pixelmonmod.pixelmon.config.PixelmonItemsHeld;
 import com.pixelmonmod.pixelmon.entities.pixelmon.stats.IVStore;
 import com.pixelmonmod.pixelmon.enums.EnumSpecies;
+import net.eterniamc.pokebuilder.Configuration.Config;
 import net.eterniamc.pokebuilder.ModifierData;
 import net.eterniamc.pokebuilder.PokeBuilder;
 import net.eterniamc.pokebuilder.Utils;
@@ -55,10 +56,6 @@ public class IVModifier implements Modifier {
         Pokemon pixelmon = data.getPokemon();
         Player player = data.getPlayer();
         StateContainer container = data.getGui();
-        if (container == null) {
-            pixelmon.getStats().ivs.maximizeIVs();
-            return true;
-        }
         if (container.hasState("ivs"))
             container.removeState("ivs");
         Page.PageBuilder builder = Page.builder()
@@ -79,12 +76,12 @@ public class IVModifier implements Modifier {
                 .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "HP IVs"))
                 .build())
         );
-        if (PokeBuilder.config.hpIvsCost > 0) {
+        if (Config.hpIvsCost > 0) {
             builder.putElement(2, new ActionableElement(
                             new RunnableAction(container, ActionType.NONE, "", c -> {
-                                if (Utils.getBal(player) >= PokeBuilder.config.hpIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) && pixelmon.getIVs().hp + 1 <= 31) {
+                                if (Utils.getBal(player) >= Config.hpIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) && pixelmon.getIVs().hp + 1 <= 31) {
                                     pixelmon.getIVs().hp++;
-                                    Utils.withdraw(player, PokeBuilder.config.hpIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1));
+                                    Utils.withdraw(player, Config.hpIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
                                     player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(0)).ifPresent(inv ->
                                             inv.set(ItemStack.builder()
                                                     .itemType((ItemType) PixelmonItemsHeld.powerBracer)
@@ -100,17 +97,17 @@ public class IVModifier implements Modifier {
                                     .add(Keys.DYE_COLOR, DyeColors.GREEN)
                                     .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "+1 HP IV"))
                                     .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                            PokeBuilder.config.hpIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                            PokeBuilder.config.hpIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.currency.getPluralDisplayName().toPlain()
+                                            Config.hpIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
+                                            Config.hpIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
                                     )))
                                     .build()
                     )
             );
             builder.putElement(3, new ActionableElement(
                             new RunnableAction(container, ActionType.NONE, "", c -> {
-                                if (Utils.getBal(player) >= PokeBuilder.config.hpIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) && pixelmon.getIVs().hp + 10 <= 31) {
+                                if (Utils.getBal(player) >= Config.hpIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) && pixelmon.getIVs().hp + 10 <= 31) {
                                     pixelmon.getIVs().hp += 10;
-                                    Utils.withdraw(player, PokeBuilder.config.hpIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1));
+                                    Utils.withdraw(player, Config.hpIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
                                     player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(0)).ifPresent(inv ->
                                             inv.set(ItemStack.builder()
                                                     .itemType((ItemType) PixelmonItemsHeld.powerBracer)
@@ -127,8 +124,8 @@ public class IVModifier implements Modifier {
                                     .add(Keys.DYE_COLOR, DyeColors.GREEN)
                                     .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "+10 HP IV"))
                                     .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                            PokeBuilder.config.hpIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                            PokeBuilder.config.hpIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.currency.getPluralDisplayName().toPlain()
+                                            Config.hpIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
+                                            Config.hpIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
                                     )))
                                     .build()
                     )
@@ -140,12 +137,12 @@ public class IVModifier implements Modifier {
                 .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Attack IVs"))
                 .build())
         );
-        if (PokeBuilder.config.attIvsCost > 0) {
+        if (Config.attIvsCost > 0) {
             builder.putElement(11, new ActionableElement(
                             new RunnableAction(container, ActionType.NONE, "", c -> {
-                                if (Utils.getBal(player) >= PokeBuilder.config.attIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) && pixelmon.getIVs().attack + 1 <= 31) {
+                                if (Utils.getBal(player) >= Config.attIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) && pixelmon.getIVs().attack + 1 <= 31) {
                                     pixelmon.getIVs().attack++;
-                                    Utils.withdraw(player, PokeBuilder.config.attIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1));
+                                    Utils.withdraw(player, Config.attIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
                                     player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(9)).ifPresent(inv ->
                                             inv.set(ItemStack.builder()
                                                     .itemType((ItemType) PixelmonItemsHeld.powerBand)
@@ -161,17 +158,17 @@ public class IVModifier implements Modifier {
                                     .add(Keys.DYE_COLOR, DyeColors.GREEN)
                                     .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "+1 Attack IV"))
                                     .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                            PokeBuilder.config.attIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                            PokeBuilder.config.attIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.currency.getPluralDisplayName().toPlain()
+                                            Config.attIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
+                                            Config.attIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
                                     )))
                                     .build()
                     )
             );
             builder.putElement(12, new ActionableElement(
                             new RunnableAction(container, ActionType.NONE, "", c -> {
-                                if (Utils.getBal(player) >= PokeBuilder.config.attIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) && pixelmon.getIVs().attack + 10 <= 31) {
+                                if (Utils.getBal(player) >= Config.attIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) && pixelmon.getIVs().attack + 10 <= 31) {
                                     pixelmon.getIVs().attack += 10;
-                                    Utils.withdraw(player, PokeBuilder.config.attIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1));
+                                    Utils.withdraw(player, Config.attIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
                                     player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(9)).ifPresent(inv ->
                                             inv.set(ItemStack.builder()
                                                     .itemType((ItemType) PixelmonItemsHeld.powerBand)
@@ -188,8 +185,8 @@ public class IVModifier implements Modifier {
                                     .add(Keys.DYE_COLOR, DyeColors.GREEN)
                                     .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "+10 Attack IVs"))
                                     .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                            PokeBuilder.config.attIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                            PokeBuilder.config.attIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.currency.getPluralDisplayName().toPlain()
+                                            Config.attIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
+                                            Config.attIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
                                     )))
                                     .build()
                     )
@@ -201,12 +198,12 @@ public class IVModifier implements Modifier {
                 .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Defence IVs"))
                 .build())
         );
-        if (PokeBuilder.config.defIvsCost > 0) {
+        if (Config.defIvsCost > 0) {
             builder.putElement(20, new ActionableElement(
                             new RunnableAction(container, ActionType.NONE, "", c -> {
-                                if (Utils.getBal(player) >= PokeBuilder.config.defIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) && pixelmon.getIVs().defence + 1 <= 31) {
+                                if (Utils.getBal(player) >= Config.defIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) && pixelmon.getIVs().defence + 1 <= 31) {
                                     pixelmon.getIVs().defence++;
-                                    Utils.withdraw(player, PokeBuilder.config.defIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1));
+                                    Utils.withdraw(player, Config.defIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
                                     player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(18)).ifPresent(inv ->
                                             inv.set(ItemStack.builder()
                                                     .itemType((ItemType) PixelmonItemsHeld.powerLens)
@@ -222,17 +219,17 @@ public class IVModifier implements Modifier {
                                     .add(Keys.DYE_COLOR, DyeColors.GREEN)
                                     .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "+1 Defence IV"))
                                     .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                            PokeBuilder.config.defIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                            PokeBuilder.config.defIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.currency.getPluralDisplayName().toPlain()
+                                            Config.defIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
+                                            Config.defIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
                                     )))
                                     .build()
                     )
             );
             builder.putElement(21, new ActionableElement(
                             new RunnableAction(container, ActionType.NONE, "", c -> {
-                                if (Utils.getBal(player) >= PokeBuilder.config.defIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) && pixelmon.getIVs().defence + 10 <= 31) {
+                                if (Utils.getBal(player) >= Config.defIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) && pixelmon.getIVs().defence + 10 <= 31) {
                                     pixelmon.getIVs().defence += 10;
-                                    Utils.withdraw(player, PokeBuilder.config.defIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1));
+                                    Utils.withdraw(player, Config.defIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
                                     player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(18)).ifPresent(inv ->
                                             inv.set(ItemStack.builder()
                                                     .itemType((ItemType) PixelmonItemsHeld.powerLens)
@@ -249,8 +246,8 @@ public class IVModifier implements Modifier {
                                     .add(Keys.DYE_COLOR, DyeColors.GREEN)
                                     .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "+10 Defence IVs"))
                                     .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                            PokeBuilder.config.defIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                            PokeBuilder.config.defIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.currency.getPluralDisplayName().toPlain()
+                                            Config.defIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
+                                            Config.defIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
                                     )))
                                     .build()
                     )
@@ -262,12 +259,12 @@ public class IVModifier implements Modifier {
                 .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Special Attack IVs"))
                 .build())
         );
-        if (PokeBuilder.config.spAttIvsCost > 0) {
+        if (Config.spAttIvsCost > 0) {
             builder.putElement(29, new ActionableElement(
                             new RunnableAction(container, ActionType.NONE, "", c -> {
-                                if (Utils.getBal(player) >= PokeBuilder.config.spAttIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) && pixelmon.getIVs().specialAttack + 1 <= 31) {
+                                if (Utils.getBal(player) >= Config.spAttIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) && pixelmon.getIVs().specialAttack + 1 <= 31) {
                                     pixelmon.getIVs().specialAttack++;
-                                    Utils.withdraw(player, PokeBuilder.config.spAttIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1));
+                                    Utils.withdraw(player, Config.spAttIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
                                     player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(27)).ifPresent(inv ->
                                             inv.set(ItemStack.builder()
                                                     .itemType((ItemType) PixelmonItemsHeld.powerAnklet)
@@ -283,17 +280,17 @@ public class IVModifier implements Modifier {
                                     .add(Keys.DYE_COLOR, DyeColors.GREEN)
                                     .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "+1 Special Attack IV"))
                                     .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                            PokeBuilder.config.spAttIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                            PokeBuilder.config.spAttIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.currency.getPluralDisplayName().toPlain()
+                                            Config.spAttIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
+                                            Config.spAttIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
                                     )))
                                     .build()
                     )
             );
             builder.putElement(30, new ActionableElement(
                             new RunnableAction(container, ActionType.NONE, "", c -> {
-                                if (Utils.getBal(player) >= PokeBuilder.config.spAttIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) && pixelmon.getIVs().specialAttack + 10 <= 31) {
+                                if (Utils.getBal(player) >= Config.spAttIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) && pixelmon.getIVs().specialAttack + 10 <= 31) {
                                     pixelmon.getIVs().specialAttack += 10;
-                                    Utils.withdraw(player, PokeBuilder.config.spAttIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1));
+                                    Utils.withdraw(player, Config.spAttIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
                                     player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(27)).ifPresent(inv ->
                                             inv.set(ItemStack.builder()
                                                     .itemType((ItemType) PixelmonItemsHeld.powerAnklet)
@@ -310,8 +307,8 @@ public class IVModifier implements Modifier {
                                     .add(Keys.DYE_COLOR, DyeColors.GREEN)
                                     .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "+10 Special Attack IVs"))
                                     .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                            PokeBuilder.config.spAttIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                            PokeBuilder.config.spAttIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.currency.getPluralDisplayName().toPlain()
+                                            Config.spAttIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
+                                            Config.spAttIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
                                     )))
                                     .build()
                     )
@@ -323,12 +320,12 @@ public class IVModifier implements Modifier {
                 .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Special Defence IVs"))
                 .build())
         );
-        if (PokeBuilder.config.spDefIvsCost > 0) {
+        if (Config.spDefIvsCost > 0) {
             builder.putElement(38, new ActionableElement(
                             new RunnableAction(container, ActionType.NONE, "", c -> {
-                                if (Utils.getBal(player) >= PokeBuilder.config.spDefIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) && pixelmon.getIVs().specialDefence + 1 <= 31) {
+                                if (Utils.getBal(player) >= Config.spDefIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) && pixelmon.getIVs().specialDefence + 1 <= 31) {
                                     pixelmon.getIVs().specialDefence++;
-                                    Utils.withdraw(player, PokeBuilder.config.spDefIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1));
+                                    Utils.withdraw(player, Config.spDefIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
                                     player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(36)).ifPresent(inv ->
                                             inv.set(ItemStack.builder()
                                                     .itemType((ItemType) PixelmonItemsHeld.powerBelt)
@@ -344,17 +341,17 @@ public class IVModifier implements Modifier {
                                     .add(Keys.DYE_COLOR, DyeColors.GREEN)
                                     .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "+1 Special Defence IV"))
                                     .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                            PokeBuilder.config.spDefIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                            PokeBuilder.config.spDefIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.currency.getPluralDisplayName().toPlain()
+                                            Config.spDefIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
+                                            Config.spDefIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
                                     )))
                                     .build()
                     )
             );
             builder.putElement(39, new ActionableElement(
                             new RunnableAction(container, ActionType.NONE, "", c -> {
-                                if (Utils.getBal(player) >= PokeBuilder.config.spDefIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) && pixelmon.getIVs().specialDefence + 10 <= 31) {
+                                if (Utils.getBal(player) >= Config.spDefIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) && pixelmon.getIVs().specialDefence + 10 <= 31) {
                                     pixelmon.getIVs().specialDefence += 10;
-                                    Utils.withdraw(player, PokeBuilder.config.spDefIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1));
+                                    Utils.withdraw(player, Config.spDefIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
                                     player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(36)).ifPresent(inv ->
                                             inv.set(ItemStack.builder()
                                                     .itemType((ItemType) PixelmonItemsHeld.powerBelt)
@@ -371,8 +368,8 @@ public class IVModifier implements Modifier {
                                     .add(Keys.DYE_COLOR, DyeColors.GREEN)
                                     .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "+10 Special Defence IVs"))
                                     .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                            PokeBuilder.config.spDefIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                            PokeBuilder.config.spDefIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.currency.getPluralDisplayName().toPlain()
+                                            Config.spDefIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
+                                            Config.spDefIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
                                     )))
                                     .build()
                     )
@@ -384,12 +381,12 @@ public class IVModifier implements Modifier {
                 .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Speed IVs"))
                 .build())
         );
-        if (PokeBuilder.config.speedIvsCost > 0) {
+        if (Config.speedIvsCost > 0) {
             builder.putElement(47, new ActionableElement(
                             new RunnableAction(container, ActionType.NONE, "", c -> {
-                                if (Utils.getBal(player) >= PokeBuilder.config.speedIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) && pixelmon.getIVs().speed + 1 <= 31) {
+                                if (Utils.getBal(player) >= Config.speedIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) && pixelmon.getIVs().speed + 1 <= 31) {
                                     pixelmon.getIVs().speed++;
-                                    Utils.withdraw(player, PokeBuilder.config.speedIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1));
+                                    Utils.withdraw(player, Config.speedIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
                                     player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(45)).ifPresent(inv ->
                                             inv.set(ItemStack.builder()
                                                     .itemType((ItemType) PixelmonItemsHeld.powerWeight)
@@ -405,17 +402,17 @@ public class IVModifier implements Modifier {
                                     .add(Keys.DYE_COLOR, DyeColors.GREEN)
                                     .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "+1 Speed IV"))
                                     .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                            PokeBuilder.config.speedIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                            PokeBuilder.config.speedIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.currency.getPluralDisplayName().toPlain()
+                                            Config.speedIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
+                                            Config.speedIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
                                     )))
                                     .build()
                     )
             );
             builder.putElement(48, new ActionableElement(
                             new RunnableAction(container, ActionType.NONE, "", c -> {
-                                if (Utils.getBal(player) >= PokeBuilder.config.speedIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) && pixelmon.getIVs().speed + 10 <= 31) {
+                                if (Utils.getBal(player) >= Config.speedIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) && pixelmon.getIVs().speed + 10 <= 31) {
                                     pixelmon.getIVs().speed += 10;
-                                    Utils.withdraw(player, PokeBuilder.config.speedIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1));
+                                    Utils.withdraw(player, Config.speedIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
                                     player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(45)).ifPresent(inv ->
                                             inv.set(ItemStack.builder()
                                                     .itemType((ItemType) PixelmonItemsHeld.powerWeight)
@@ -432,18 +429,18 @@ public class IVModifier implements Modifier {
                                     .add(Keys.DYE_COLOR, DyeColors.GREEN)
                                     .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "+10 Speed IVs"))
                                     .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                            PokeBuilder.config.speedIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                            PokeBuilder.config.speedIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.currency.getPluralDisplayName().toPlain()
+                                            Config.speedIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
+                                            Config.speedIvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
                                     )))
                                     .build()
                     )
             );
         }
-        if (PokeBuilder.config.rerollIvsCost > 0)
+        if (Config.rerollIvsCost > 0)
             builder.putElement(24, new ActionableElement(
                     new RunnableAction(container, ActionType.NONE, "", c -> {
-                        if (Utils.getBal(player) >= PokeBuilder.config.rerollIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1)) {
-                            Utils.withdraw(player, PokeBuilder.config.rerollIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1));
+                        if (Utils.getBal(player) >= Config.rerollIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1)) {
+                            Utils.withdraw(player, Config.rerollIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
                             pixelmon.getStats().ivs = IVStore.CreateNewIVs();
                             player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(45)).ifPresent(inv ->
                                     inv.set(ItemStack.builder()
@@ -499,16 +496,16 @@ public class IVModifier implements Modifier {
                             .itemType((ItemType) PixelmonItems.potion)
                             .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Reroll IVs"))
                             .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                    PokeBuilder.config.rerollIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                    PokeBuilder.config.rerollIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.currency.getPluralDisplayName().toPlain()
+                                    Config.rerollIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
+                                    Config.rerollIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
                             )))
                             .build()
             ));
-        if (PokeBuilder.config.maxIvsCost > 0)
+        if (Config.maxIvsCost > 0)
             builder.putElement(33, new ActionableElement(
                     new RunnableAction(container, ActionType.NONE, "", c -> {
-                        if (Utils.getBal(player) >= PokeBuilder.config.maxIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1)) {
-                            Utils.withdraw(player, PokeBuilder.config.maxIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1));
+                        if (Utils.getBal(player) >= Config.maxIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1)) {
+                            Utils.withdraw(player, Config.maxIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
                             pixelmon.getIVs().maximizeIVs();
                             player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(45)).ifPresent(inv ->
                                     inv.set(ItemStack.builder()
@@ -564,8 +561,8 @@ public class IVModifier implements Modifier {
                             .itemType((ItemType) PixelmonItems.maxPotion)
                             .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Max IVs"))
                             .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                    PokeBuilder.config.maxIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                    PokeBuilder.config.maxIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? PokeBuilder.config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.currency.getPluralDisplayName().toPlain()
+                                    Config.maxIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
+                                    Config.maxIvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
                             )))
                             .build()
             ));
