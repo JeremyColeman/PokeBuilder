@@ -22,20 +22,19 @@ public class GiveModifier implements CommandExecutor {
                         GenericArguments.playerOrSource(Text.of("player")),
                         GenericArguments.choices(
                                 Text.of("modifier"),
-                                () -> PokeBuilder.getModifiers().stream().map(m -> m.getClass().getName()).collect(Collectors.toList()),
-                                s -> PokeBuilder.getModifiers().stream().filter(m -> m.getClass().getName().equals(s)).findFirst().get()
+                                () -> PokeBuilder.getModifiers().stream().map(m -> m.getClass().getSimpleName().replace("Modifier", "")).collect(Collectors.toList()),
+                                s -> PokeBuilder.getModifiers().stream().filter(m -> m.getClass().getSimpleName().replace("Modifier", "").equals(s)).findFirst().get()
                         )
                 )
+                .executor(new GiveModifier())
                 .build();
     }
 
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) {
-
         Player player = args.<Player>getOne("player").get();
         Modifier modifier = args.<Modifier>getOne("modifier").get();
         player.getInventory().offer(modifier.getItemStack(player, null));
         return CommandResult.empty();
     }
-
 }

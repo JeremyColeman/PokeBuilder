@@ -54,7 +54,7 @@ public class PokeBuilderGui {
         }
         for (Pokemon pixelmon : party) {
             if (pixelmon != null) {
-                if (!Config.blacklistedPokemon.stream().anyMatch(s -> s.equalsIgnoreCase(pixelmon.getDisplayName()))) {
+                if (Config.blacklistedPokemon.stream().noneMatch(s -> s.equalsIgnoreCase(pixelmon.getSpecies().getPokemonName()))) {
                     main.addElement(new ActionableElement(
                                     new RunnableAction(container, ActionType.NONE, "", c -> createEditorPage(container, pixelmon, player).openState(player, "editor")),
                                     ItemStack.builder()
@@ -80,7 +80,6 @@ public class PokeBuilderGui {
                             else {
                                 ChatGuiHelper.addGUI("Enter the name of the pokemon you want, regular pokemon getCost(pokemon) $" + Config.pokemonCost + " and legendaries getCost(pokemon) $" + Config.legendaryCost, player, text -> {
                                     EnumSpecies pokemon = EnumSpecies.getFromNameAnyCase(text.toPlain());
-                                    Pokemon pixelmon1 = Pixelmon.pokemonFactory.create(pokemon);
                                     if (pokemon == null) {
                                         Utils.sendPlayerError(player, "Invalid Pokemon");
                                         return;
@@ -89,6 +88,7 @@ public class PokeBuilderGui {
                                     } else {
                                         Utils.withdraw(player, Config.pokemonCost);
                                     }
+                                    Pokemon pixelmon1 = Pixelmon.pokemonFactory.create(pokemon);
                                     pixelmon1.setOriginalTrainer((EntityPlayerMP) player);
                                     store.add(pixelmon1);
                                 });
@@ -145,19 +145,20 @@ public class PokeBuilderGui {
                 .setParent("main");
         for (int i = 0; i < PokeBuilder.getModifiers().size(); i++) {
             Modifier modifier = PokeBuilder.getModifiers().get(i);
-            if (modifier.getCost(pokemon) < 0)
+            if (modifier.getCost(pokemon) < 0) {
                 builder.putElement(i / 2 * 9 + i % 2 * 8, new Element(
                         ItemStack.builder()
                                 .itemType(ItemTypes.BARRIER)
                                 .add(Keys.DISPLAY_NAME, TextSerializers.FORMATTING_CODE.deserialize("&c" + modifier.toString() + " Modifier &7{&c&lDISABLED&7}"))
                                 .build()
                 ));
-            else
+            } else {
                 builder.putElement(i / 2 * 9 + i % 2 * 8, new ActionableElement(
                         new RunnableAction(container, ActionType.NONE, "", c -> {
                             if (modifier.getCost(pokemon) <= Utils.getBal(player)) {
                                 if (modifier.run(new ModifierData(pokemon, player, container))) {
                                     Utils.withdraw(player, modifier.getCost(pokemon));
+                                    Utils.sendPlayerMessage(player, modifier.getCost(pokemon) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain() + " have been withdrawn from your account");
                                     if (!player.getOpenInventory().isPresent())
                                         container.openState(player, "editor");
                                     player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(22)).ifPresent(inv ->
@@ -173,6 +174,7 @@ public class PokeBuilderGui {
                         }),
                         modifier.getItemStack(player, pokemon)
                 ));
+            }
         }
         for (int i = 0; i < 45; i++)
             if (i % 9 != 0 && i % 9 != 8)

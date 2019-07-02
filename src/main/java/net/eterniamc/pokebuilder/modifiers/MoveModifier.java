@@ -9,7 +9,6 @@ import com.codehusky.huskyui.states.element.Element;
 import com.pixelmonmod.pixelmon.api.pokemon.Pokemon;
 import com.pixelmonmod.pixelmon.battles.attacks.Attack;
 import com.pixelmonmod.pixelmon.config.PixelmonItemsTMs;
-import com.pixelmonmod.pixelmon.enums.EnumSpecies;
 import net.eterniamc.pokebuilder.Configuration.Config;
 import net.eterniamc.pokebuilder.ModifierData;
 import net.eterniamc.pokebuilder.Utils;
@@ -24,7 +23,6 @@ import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
@@ -37,18 +35,21 @@ public class MoveModifier implements Modifier {
     public boolean run(ModifierData data) {
         Pokemon pixelmon = data.getPokemon();
         Player player = data.getPlayer();
-        StateContainer container = data.getGui();
+        StateContainer container = data.getGui() == null ? new StateContainer() : data.getGui();
         if (container.hasState("move"))
             container.removeState("move");
-        Page.PageBuilder natureModifier = Page.builder()
+        Page.PageBuilder builder = Page.builder()
                 .setTitle(Text.of("Move Modifier"))
                 .setAutoPaging(true)
                 .setParent("editor")
                 .setEmptyStack(Utils.empty());
+        if (data.getGui() == null) {
+            builder.setParent(null);
+        }
         for (int it = 0; it < 4; it++) {
             final int i = it;
-            natureModifier.addElement(new Element(ItemStack.empty()));
-            natureModifier.addElement(
+            builder.addElement(new Element(ItemStack.empty()));
+            builder.addElement(
                     new ActionableElement(
                             new RunnableAction(container, ActionType.NONE, "", context -> {
                                 Page.PageBuilder moveSlot = Page.builder()
@@ -60,7 +61,8 @@ public class MoveModifier implements Modifier {
                                     moveSlot.addElement(new ActionableElement(
                                                     new RunnableAction(container, ActionType.CLOSE, "", action -> {
                                                         pixelmon.getMoveset().set(i, attack);
-                                                        Utils.withdraw(player, Config.moveModifierCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
+                                                        if (data.getGui() != null)
+                                                            Utils.withdraw(player, getCost(pixelmon));
                                                         if (((EntityPlayerMP) player).getHeldItemMainhand().getCount() == 1)
                                                             ((EntityPlayerMP) player).setHeldItem(EnumHand.MAIN_HAND, net.minecraft.item.ItemStack.EMPTY);
                                                         ((EntityPlayerMP) player).getHeldItemMainhand().shrink(1);
@@ -89,7 +91,7 @@ public class MoveModifier implements Modifier {
                     )
             );
         }
-        container.addState(natureModifier.build("move"));
+        container.addState(builder.build("move"));
         container.openState(player, "move");
         return false;
     }
