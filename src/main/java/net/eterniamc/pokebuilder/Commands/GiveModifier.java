@@ -15,15 +15,6 @@ import java.util.stream.Collectors;
 
 public class GiveModifier implements CommandExecutor {
 
-    @Override
-    public CommandResult execute(CommandSource src, CommandContext args) {
-
-        Player player = args.<Player>getOne("player").get();
-        Modifier modifier = args.<Modifier>getOne("modifier").get();
-        player.getInventory().offer(modifier.getItemStack(player, null));
-        return CommandResult.empty();
-    }
-
     public static CommandSpec getSpec() {
         return CommandSpec.builder()
                 .permission("pokebuilder.modifier.give")
@@ -36,6 +27,15 @@ public class GiveModifier implements CommandExecutor {
                         )
                 )
                 .build();
+    }
+
+    @Override
+    public CommandResult execute(CommandSource src, CommandContext args) {
+
+        Player player = args.<Player>getOne("player").get();
+        Modifier modifier = args.<Modifier>getOne("modifier").get();
+        player.getInventory().offer(modifier.getItemStack(player, null));
+        return CommandResult.empty();
     }
 
 }

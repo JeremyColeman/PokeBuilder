@@ -27,8 +27,11 @@ import org.spongepowered.api.item.inventory.property.InventoryDimension;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.pixelmonmod.pixelmon.entities.pixelmon.stats.EVStore.MAX_TOTAL_EVS;
 
@@ -47,6 +50,48 @@ public class EVModifier implements Modifier {
         return 0;
     }
 
+    private double getCost(Pokemon pokemon, String type) {
+        return getBaseCost(type) * getMultiplier(pokemon);
+    }
+
+    private double getBaseCost(String type) {
+        switch (type) {
+            case "hp":
+                return Config.hpEvsCost;
+            case "attack":
+                return Config.attEvsCost;
+            case "defence":
+                return Config.defEvsCost;
+            case "specialAttack":
+                return Config.spAttEvsCost;
+            case "specialDefence":
+                return Config.spDefEvsCost;
+            case "speed":
+                return Config.speedEvsCost;
+            default:
+                return 0;
+        }
+    }
+
+    private ItemType getGuiItem(String type) {
+        switch (type) {
+            case "hp":
+                return (ItemType) PixelmonItemsHeld.powerBracer;
+            case "attack":
+                return (ItemType) PixelmonItemsHeld.powerLens;
+            case "defence":
+                return (ItemType) PixelmonItemsHeld.powerBelt;
+            case "specialAttack":
+                return (ItemType) PixelmonItemsHeld.powerBand;
+            case "specialDefence":
+                return (ItemType) PixelmonItemsHeld.powerWeight;
+            case "speed":
+                return (ItemType) PixelmonItemsHeld.powerAnklet;
+            default:
+                return ItemTypes.BARRIER;
+        }
+    }
+
     @Override
     public ItemType getItem() {
         return (ItemType) PixelmonItemsHeld.everStone;
@@ -54,11 +99,12 @@ public class EVModifier implements Modifier {
 
     @Override
     public boolean run(ModifierData data) {
-        Pokemon pixelmon = data.getPokemon();
+        Pokemon pokemon = data.getPokemon();
         Player player = data.getPlayer();
         StateContainer container = data.getGui();
-        if (container.hasState("evs"))
+        if (container.hasState("evs")) {
             container.removeState("evs");
+        }
         Page.PageBuilder builder = Page.builder()
                 .setTitle(Text.of("EV Modifier"))
                 .setInventoryDimension(InventoryDimension.of(9, 6))
@@ -71,382 +117,106 @@ public class EVModifier implements Modifier {
                     .build())
             );
         }
-        builder.putElement(0, new Element(ItemStack.builder()
-                .itemType((ItemType) PixelmonItemsHeld.powerBracer)
-                .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().hp)))
-                .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "HP EVs"))
-                .build())
-        );
-        if (Config.hpEvsCost > 0) {
-            builder.putElement(2, new ActionableElement(
-                            new RunnableAction(container, ActionType.NONE, "", c -> {
-                                if (Utils.getBal(player) >= Config.hpEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) && pixelmon.getEVs().hp + 1 <= EVStore.MAX_EVS && MAX_TOTAL_EVS - pixelmon.getEVs().hp - pixelmon.getEVs().attack - pixelmon.getEVs().defence - pixelmon.getEVs().specialAttack - pixelmon.getEVs().specialDefence - pixelmon.getEVs().speed > 0) {
-                                    pixelmon.getEVs().hp++;
-                                    Utils.withdraw(player, Config.hpEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
-                                    player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(0)).ifPresent(inv ->
-                                            inv.set(ItemStack.builder()
-                                                    .itemType((ItemType) PixelmonItemsHeld.powerBracer)
-                                                    .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().hp)))
-                                                    .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "HP EVs"))
-                                                    .build()
-                                            )
-                                    );
-                                }
-                            }),
-                            ItemStack.builder()
-                                    .itemType(ItemTypes.CONCRETE)
-                                    .add(Keys.DYE_COLOR, DyeColors.GREEN)
-                                    .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "+1 HP EV"))
-                                    .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                            Config.hpEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                            Config.hpEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
-                                    )))
-                                    .build()
-                    )
-            );
-            builder.putElement(3, new ActionableElement(
-                            new RunnableAction(container, ActionType.NONE, "", c -> {
-                                if (Utils.getBal(player) >= Config.hpEvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) && pixelmon.getEVs().hp + 10 <= EVStore.MAX_EVS && MAX_TOTAL_EVS - pixelmon.getEVs().hp - pixelmon.getEVs().attack - pixelmon.getEVs().defence - pixelmon.getEVs().specialAttack - pixelmon.getEVs().specialDefence - pixelmon.getEVs().speed > 0) {
-                                    pixelmon.getEVs().hp += 10;
-                                    Utils.withdraw(player, Config.hpEvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
-                                    player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(0)).ifPresent(inv ->
-                                            inv.set(ItemStack.builder()
-                                                    .itemType((ItemType) PixelmonItemsHeld.powerBracer)
-                                                    .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().hp)))
-                                                    .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "HP EVs"))
-                                                    .build()
-                                            )
-                                    );
-                                }
-                            }),
-                            ItemStack.builder()
-                                    .itemType(ItemTypes.CONCRETE)
-                                    .quantity(10)
-                                    .add(Keys.DYE_COLOR, DyeColors.GREEN)
-                                    .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "+10 HP EV"))
-                                    .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                            Config.hpEvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                            Config.hpEvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
-                                    )))
-                                    .build()
-                    )
-            );
+        List<Field> fields = Arrays.stream(EVStore.class.getDeclaredFields()).filter(f -> f.getType() == int.class && !f.getName().contains("_")).collect(Collectors.toList());
+        int i = 0;
+        try {
+            for (Field field : fields) {
+                String type = field.getName();
+                i++;
+                builder.putElement(i, new Element(ItemStack.builder()
+                        .itemType((ItemType) PixelmonItemsHeld.powerBracer)
+                        .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, field.get(pokemon.getEVs()))))
+                        .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, Utils.fromCamelToDisplay(type).replace("Hp", "HP") + " EVs"))
+                        .build())
+                );
+                if (getCost(pokemon, type) > 0) {
+                    builder.putElement(i + 2, new ActionableElement(
+                                    new RunnableAction(container, ActionType.NONE, "", c -> {
+                                        try {
+                                            if (Utils.getBal(player) >= getCost(pokemon, type) && (Integer) field.get(pokemon.getEVs()) + 1 <= EVStore.MAX_EVS && MAX_TOTAL_EVS - Arrays.stream(pokemon.getEVs().getArray()).sum() > 0) {
+                                                field.set(pokemon.getEVs(), ((Integer) field.get(pokemon.getEVs())) + 1);
+                                                Utils.withdraw(player, getCost(pokemon, type));
+                                                player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(0)).ifPresent(inv -> {
+                                                            try {
+                                                                inv.set(ItemStack.builder()
+                                                                        .itemType(getGuiItem(type))
+                                                                        .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, field.get(pokemon.getEVs()))))
+                                                                        .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, Utils.fromCamelToDisplay(type).replace("Hp", "HP") + " EVs"))
+                                                                        .build()
+                                                                );
+                                                            } catch (IllegalAccessException e) {
+                                                                e.printStackTrace();
+                                                            }
+                                                        }
+                                                );
+                                            }
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                    }),
+                                    ItemStack.builder()
+                                            .itemType(ItemTypes.CONCRETE)
+                                            .add(Keys.DYE_COLOR, DyeColors.GREEN)
+                                            .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "+1 " + Utils.fromCamelToDisplay(type).replace("Hp", "HP") + " EV"))
+                                            .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
+                                                    getCost(pokemon, type) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
+                                                    getCost(pokemon, type) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
+                                            )))
+                                            .build()
+                            )
+                    );
+                    builder.putElement(i + 3, new ActionableElement(
+                                    new RunnableAction(container, ActionType.NONE, "", c -> {
+                                        try {
+                                            if (Utils.getBal(player) >= getCost(pokemon, type) && (Integer) field.get(pokemon.getEVs()) + 10 <= EVStore.MAX_EVS && MAX_TOTAL_EVS - Arrays.stream(pokemon.getEVs().getArray()).sum() > 0) {
+                                                field.set(pokemon.getEVs(), ((Integer) field.get(pokemon.getEVs())) + 1);
+                                                Utils.withdraw(player, getCost(pokemon, type));
+                                                player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(0)).ifPresent(inv -> {
+                                                            try {
+                                                                inv.set(ItemStack.builder()
+                                                                        .itemType(getGuiItem(type))
+                                                                        .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, field.get(pokemon.getEVs()))))
+                                                                        .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, Utils.fromCamelToDisplay(type).replace("Hp", "HP") + " EVs"))
+                                                                        .build()
+                                                                );
+                                                            } catch (IllegalAccessException e) {
+                                                                e.printStackTrace();
+                                                            }
+                                                        }
+                                                );
+                                            }
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                    }),
+                                    ItemStack.builder()
+                                            .itemType(ItemTypes.CONCRETE)
+                                            .quantity(10)
+                                            .add(Keys.DYE_COLOR, DyeColors.GREEN)
+                                            .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "+10 " + Utils.fromCamelToDisplay(type).replace("Hp", "HP") + " EV"))
+                                            .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
+                                                    getCost(pokemon, type) * 10 > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
+                                                    getCost(pokemon, type) * 10 + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
+                                            )))
+                                            .build()
+                            )
+                    );
+                }
+                i += 9;
+            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
         }
-        builder.putElement(9, new Element(ItemStack.builder()
-                .itemType((ItemType) PixelmonItemsHeld.powerBand)
-                .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().attack)))
-                .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Attack EVs"))
-                .build())
-        );
-        if (Config.attEvsCost > 0) {
-            builder.putElement(11, new ActionableElement(
-                            new RunnableAction(container, ActionType.NONE, "", c -> {
-                                if (Utils.getBal(player) >= Config.attEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) && pixelmon.getEVs().attack + 1 <= EVStore.MAX_EVS && MAX_TOTAL_EVS - pixelmon.getEVs().hp - pixelmon.getEVs().attack - pixelmon.getEVs().defence - pixelmon.getEVs().specialAttack - pixelmon.getEVs().specialDefence - pixelmon.getEVs().speed > 0) {
-                                    pixelmon.getEVs().attack++;
-                                    Utils.withdraw(player, Config.attEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
-                                    player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(9)).ifPresent(inv ->
-                                            inv.set(ItemStack.builder()
-                                                    .itemType((ItemType) PixelmonItemsHeld.powerBand)
-                                                    .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().attack)))
-                                                    .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Attack EVs"))
-                                                    .build()
-                                            )
-                                    );
-                                }
-                            }),
-                            ItemStack.builder()
-                                    .itemType(ItemTypes.CONCRETE)
-                                    .add(Keys.DYE_COLOR, DyeColors.GREEN)
-                                    .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "+1 Attack EV"))
-                                    .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                            Config.attEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                            Config.attEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
-                                    )))
-                                    .build()
-                    )
-            );
-            builder.putElement(12, new ActionableElement(
-                            new RunnableAction(container, ActionType.NONE, "", c -> {
-                                if (Utils.getBal(player) >= Config.attEvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) && pixelmon.getEVs().attack + 10 <= EVStore.MAX_EVS && MAX_TOTAL_EVS - pixelmon.getEVs().hp - pixelmon.getEVs().attack - pixelmon.getEVs().defence - pixelmon.getEVs().specialAttack - pixelmon.getEVs().specialDefence - pixelmon.getEVs().speed > 0) {
-                                    pixelmon.getEVs().attack += 10;
-                                    Utils.withdraw(player, Config.attEvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
-                                    player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(9)).ifPresent(inv ->
-                                            inv.set(ItemStack.builder()
-                                                    .itemType((ItemType) PixelmonItemsHeld.powerBand)
-                                                    .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().attack)))
-                                                    .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Attack EVs"))
-                                                    .build()
-                                            )
-                                    );
-                                }
-                            }),
-                            ItemStack.builder()
-                                    .itemType(ItemTypes.CONCRETE)
-                                    .quantity(10)
-                                    .add(Keys.DYE_COLOR, DyeColors.GREEN)
-                                    .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "+10 Attack EVs"))
-                                    .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                            Config.attEvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                            Config.attEvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
-                                    )))
-                                    .build()
-                    )
-            );
-        }
-        builder.putElement(18, new Element(ItemStack.builder()
-                .itemType((ItemType) PixelmonItemsHeld.powerLens)
-                .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().defence)))
-                .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Defence EVs"))
-                .build())
-        );
-        if (Config.defEvsCost > 0) {
-            builder.putElement(20, new ActionableElement(
-                            new RunnableAction(container, ActionType.NONE, "", c -> {
-                                if (Utils.getBal(player) >= Config.defEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) && pixelmon.getEVs().defence + 1 <= EVStore.MAX_EVS && MAX_TOTAL_EVS - pixelmon.getEVs().hp - pixelmon.getEVs().attack - pixelmon.getEVs().defence - pixelmon.getEVs().specialAttack - pixelmon.getEVs().specialDefence - pixelmon.getEVs().speed > 0) {
-                                    pixelmon.getEVs().defence++;
-                                    Utils.withdraw(player, Config.defEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
-                                    player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(18)).ifPresent(inv ->
-                                            inv.set(ItemStack.builder()
-                                                    .itemType((ItemType) PixelmonItemsHeld.powerLens)
-                                                    .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().defence)))
-                                                    .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Defence EVs"))
-                                                    .build()
-                                            )
-                                    );
-                                }
-                            }),
-                            ItemStack.builder()
-                                    .itemType(ItemTypes.CONCRETE)
-                                    .add(Keys.DYE_COLOR, DyeColors.GREEN)
-                                    .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "+1 Defence EV"))
-                                    .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                            Config.defEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                            Config.defEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
-                                    )))
-                                    .build()
-                    )
-            );
-            builder.putElement(21, new ActionableElement(
-                            new RunnableAction(container, ActionType.NONE, "", c -> {
-                                if (Utils.getBal(player) >= Config.defEvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) && pixelmon.getEVs().defence + 10 <= EVStore.MAX_EVS && MAX_TOTAL_EVS - pixelmon.getEVs().hp - pixelmon.getEVs().attack - pixelmon.getEVs().defence - pixelmon.getEVs().specialAttack - pixelmon.getEVs().specialDefence - pixelmon.getEVs().speed > 0) {
-                                    pixelmon.getEVs().defence += 10;
-                                    Utils.withdraw(player, Config.defEvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
-                                    player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(18)).ifPresent(inv ->
-                                            inv.set(ItemStack.builder()
-                                                    .itemType((ItemType) PixelmonItemsHeld.powerLens)
-                                                    .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().defence)))
-                                                    .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Defence EVs"))
-                                                    .build()
-                                            )
-                                    );
-                                }
-                            }),
-                            ItemStack.builder()
-                                    .itemType(ItemTypes.CONCRETE)
-                                    .quantity(10)
-                                    .add(Keys.DYE_COLOR, DyeColors.GREEN)
-                                    .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "+10 Defence EVs"))
-                                    .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                            Config.defEvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                            Config.defEvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
-                                    )))
-                                    .build()
-                    )
-            );
-        }
-        builder.putElement(27, new Element(ItemStack.builder()
-                .itemType((ItemType) PixelmonItemsHeld.powerAnklet)
-                .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().specialAttack)))
-                .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Special Attack EVs"))
-                .build())
-        );
-        if (Config.spAttEvsCost > 0) {
-            builder.putElement(29, new ActionableElement(
-                            new RunnableAction(container, ActionType.NONE, "", c -> {
-                                if (Utils.getBal(player) >= Config.spAttEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) && pixelmon.getEVs().specialAttack + 1 <= EVStore.MAX_EVS && MAX_TOTAL_EVS - pixelmon.getEVs().hp - pixelmon.getEVs().attack - pixelmon.getEVs().defence - pixelmon.getEVs().specialAttack - pixelmon.getEVs().specialDefence - pixelmon.getEVs().speed > 0) {
-                                    pixelmon.getEVs().specialAttack++;
-                                    Utils.withdraw(player, Config.spAttEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
-                                    player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(27)).ifPresent(inv ->
-                                            inv.set(ItemStack.builder()
-                                                    .itemType((ItemType) PixelmonItemsHeld.powerAnklet)
-                                                    .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().specialAttack)))
-                                                    .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Special Attack EVs"))
-                                                    .build()
-                                            )
-                                    );
-                                }
-                            }),
-                            ItemStack.builder()
-                                    .itemType(ItemTypes.CONCRETE)
-                                    .add(Keys.DYE_COLOR, DyeColors.GREEN)
-                                    .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "+1 Special Attack EV"))
-                                    .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                            Config.spAttEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                            Config.spAttEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
-                                    )))
-                                    .build()
-                    )
-            );
-            builder.putElement(30, new ActionableElement(
-                            new RunnableAction(container, ActionType.NONE, "", c -> {
-                                if (Utils.getBal(player) >= Config.spAttEvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) && pixelmon.getEVs().specialAttack + 10 <= EVStore.MAX_EVS && MAX_TOTAL_EVS - pixelmon.getEVs().hp - pixelmon.getEVs().attack - pixelmon.getEVs().defence - pixelmon.getEVs().specialAttack - pixelmon.getEVs().specialDefence - pixelmon.getEVs().speed > 0) {
-                                    pixelmon.getEVs().specialAttack += 10;
-                                    Utils.withdraw(player, Config.spAttEvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
-                                    player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(27)).ifPresent(inv ->
-                                            inv.set(ItemStack.builder()
-                                                    .itemType((ItemType) PixelmonItemsHeld.powerAnklet)
-                                                    .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().specialAttack)))
-                                                    .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Special Attack EVs"))
-                                                    .build()
-                                            )
-                                    );
-                                }
-                            }),
-                            ItemStack.builder()
-                                    .itemType(ItemTypes.CONCRETE)
-                                    .quantity(10)
-                                    .add(Keys.DYE_COLOR, DyeColors.GREEN)
-                                    .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "+10 Special Attack EVs"))
-                                    .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                            Config.spAttEvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                            Config.spAttEvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
-                                    )))
-                                    .build()
-                    )
-            );
-        }
-        builder.putElement(36, new Element(ItemStack.builder()
-                .itemType((ItemType) PixelmonItemsHeld.powerBelt)
-                .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().specialDefence)))
-                .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Special Defence EVs"))
-                .build())
-        );
-        if (Config.spDefEvsCost > 0) {
-            builder.putElement(38, new ActionableElement(
-                            new RunnableAction(container, ActionType.NONE, "", c -> {
-                                if (Utils.getBal(player) >= Config.spDefEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) && pixelmon.getEVs().specialDefence + 1 <= EVStore.MAX_EVS && MAX_TOTAL_EVS - pixelmon.getEVs().hp - pixelmon.getEVs().attack - pixelmon.getEVs().defence - pixelmon.getEVs().specialAttack - pixelmon.getEVs().specialDefence - pixelmon.getEVs().speed > 0) {
-                                    pixelmon.getEVs().specialDefence++;
-                                    Utils.withdraw(player, Config.spDefEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
-                                    player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(36)).ifPresent(inv ->
-                                            inv.set(ItemStack.builder()
-                                                    .itemType((ItemType) PixelmonItemsHeld.powerBelt)
-                                                    .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().specialDefence)))
-                                                    .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Special Defence EVs"))
-                                                    .build()
-                                            )
-                                    );
-                                }
-                            }),
-                            ItemStack.builder()
-                                    .itemType(ItemTypes.CONCRETE)
-                                    .add(Keys.DYE_COLOR, DyeColors.GREEN)
-                                    .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "+1 Special Defence EV"))
-                                    .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                            Config.spDefEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                            Config.spDefEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
-                                    )))
-                                    .build()
-                    )
-            );
-            builder.putElement(39, new ActionableElement(
-                            new RunnableAction(container, ActionType.NONE, "", c -> {
-                                if (Utils.getBal(player) >= Config.spDefEvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) && pixelmon.getEVs().specialDefence + 10 <= EVStore.MAX_EVS && MAX_TOTAL_EVS - pixelmon.getEVs().hp - pixelmon.getEVs().attack - pixelmon.getEVs().defence - pixelmon.getEVs().specialAttack - pixelmon.getEVs().specialDefence - pixelmon.getEVs().speed > 0) {
-                                    pixelmon.getEVs().specialDefence += 10;
-                                    Utils.withdraw(player, Config.spDefEvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
-                                    player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(36)).ifPresent(inv ->
-                                            inv.set(ItemStack.builder()
-                                                    .itemType((ItemType) PixelmonItemsHeld.powerBelt)
-                                                    .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().specialDefence)))
-                                                    .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Special Defence EVs"))
-                                                    .build()
-                                            )
-                                    );
-                                }
-                            }),
-                            ItemStack.builder()
-                                    .itemType(ItemTypes.CONCRETE)
-                                    .quantity(10)
-                                    .add(Keys.DYE_COLOR, DyeColors.GREEN)
-                                    .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "+10 Special Defence EVs"))
-                                    .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                            Config.spDefEvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                            Config.spDefEvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
-                                    )))
-                                    .build()
-                    )
-            );
-        }
-        builder.putElement(45, new Element(ItemStack.builder()
-                .itemType((ItemType) PixelmonItemsHeld.powerWeight)
-                .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().speed)))
-                .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Speed EVs"))
-                .build())
-        );
-        if (Config.speedEvsCost > 0) {
-            builder.putElement(47, new ActionableElement(
-                            new RunnableAction(container, ActionType.NONE, "", c -> {
-                                if (Utils.getBal(player) >= Config.speedEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) && pixelmon.getEVs().speed + 1 <= EVStore.MAX_EVS && MAX_TOTAL_EVS - pixelmon.getEVs().hp - pixelmon.getEVs().attack - pixelmon.getEVs().defence - pixelmon.getEVs().specialAttack - pixelmon.getEVs().specialDefence - pixelmon.getEVs().speed > 0) {
-                                    pixelmon.getEVs().speed++;
-                                    Utils.withdraw(player, Config.speedEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
-                                    player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(45)).ifPresent(inv ->
-                                            inv.set(ItemStack.builder()
-                                                    .itemType((ItemType) PixelmonItemsHeld.powerWeight)
-                                                    .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().speed)))
-                                                    .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Speed EVs"))
-                                                    .build()
-                                            )
-                                    );
-                                }
-                            }),
-                            ItemStack.builder()
-                                    .itemType(ItemTypes.CONCRETE)
-                                    .add(Keys.DYE_COLOR, DyeColors.GREEN)
-                                    .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "+1 Speed EV"))
-                                    .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                            Config.speedEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                            Config.speedEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
-                                    )))
-                                    .build()
-                    )
-            );
-            builder.putElement(48, new ActionableElement(
-                            new RunnableAction(container, ActionType.NONE, "", c -> {
-                                if (Utils.getBal(player) >= Config.speedEvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) && pixelmon.getEVs().speed + 10 <= EVStore.MAX_EVS && MAX_TOTAL_EVS - pixelmon.getEVs().hp - pixelmon.getEVs().attack - pixelmon.getEVs().defence - pixelmon.getEVs().specialAttack - pixelmon.getEVs().specialDefence - pixelmon.getEVs().speed > 0) {
-                                    pixelmon.getEVs().speed += 10;
-                                    Utils.withdraw(player, Config.speedEvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
-                                    player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(45)).ifPresent(inv ->
-                                            inv.set(ItemStack.builder()
-                                                    .itemType((ItemType) PixelmonItemsHeld.powerWeight)
-                                                    .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().speed)))
-                                                    .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Speed EVs"))
-                                                    .build()
-                                            )
-                                    );
-                                }
-                            }),
-                            ItemStack.builder()
-                                    .itemType(ItemTypes.CONCRETE)
-                                    .quantity(10)
-                                    .add(Keys.DYE_COLOR, DyeColors.GREEN)
-                                    .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "+10 Speed EVs"))
-                                    .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                            Config.speedEvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                            Config.speedEvsCost * 10 * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
-                                    )))
-                                    .build()
-                    )
-            );
-        }
-        if (Config.resetEvsCost > 0)
+        if (Config.resetEvsCost > 0) {
             builder.putElement(24, new ActionableElement(
                     new RunnableAction(container, ActionType.NONE, "", c -> {
-                        if (Utils.getBal(player) >= Config.resetEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1)) {
-                            Utils.withdraw(player, Config.resetEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
-                            pixelmon.getStats().evs = new EVStore();
+                        if (Utils.getBal(player) >= Config.resetEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pokemon.getSpecies() == p) || pokemon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1)) {
+                            Utils.withdraw(player, Config.resetEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pokemon.getSpecies() == p) || pokemon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
+                            pokemon.getStats().evs = new EVStore();
                             player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(45)).ifPresent(inv ->
                                     inv.set(ItemStack.builder()
                                             .itemType((ItemType) PixelmonItemsHeld.powerWeight)
-                                            .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().speed)))
+                                            .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pokemon.getEVs().speed)))
                                             .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Speed EVs"))
                                             .build()
                                     )
@@ -454,7 +224,7 @@ public class EVModifier implements Modifier {
                             player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(36)).ifPresent(inv ->
                                     inv.set(ItemStack.builder()
                                             .itemType((ItemType) PixelmonItemsHeld.powerBelt)
-                                            .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().specialDefence)))
+                                            .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pokemon.getEVs().specialDefence)))
                                             .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Special Defence EVs"))
                                             .build()
                                     )
@@ -462,7 +232,7 @@ public class EVModifier implements Modifier {
                             player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(27)).ifPresent(inv ->
                                     inv.set(ItemStack.builder()
                                             .itemType((ItemType) PixelmonItemsHeld.powerAnklet)
-                                            .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().specialAttack)))
+                                            .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pokemon.getEVs().specialAttack)))
                                             .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Special Attack EVs"))
                                             .build()
                                     )
@@ -470,7 +240,7 @@ public class EVModifier implements Modifier {
                             player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(18)).ifPresent(inv ->
                                     inv.set(ItemStack.builder()
                                             .itemType((ItemType) PixelmonItemsHeld.powerLens)
-                                            .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().defence)))
+                                            .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pokemon.getEVs().defence)))
                                             .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Defence EVs"))
                                             .build()
                                     )
@@ -478,7 +248,7 @@ public class EVModifier implements Modifier {
                             player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(9)).ifPresent(inv ->
                                     inv.set(ItemStack.builder()
                                             .itemType((ItemType) PixelmonItemsHeld.powerBand)
-                                            .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().attack)))
+                                            .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pokemon.getEVs().attack)))
                                             .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Attack EVs"))
                                             .build()
                                     )
@@ -486,7 +256,7 @@ public class EVModifier implements Modifier {
                             player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(0)).ifPresent(inv ->
                                     inv.set(ItemStack.builder()
                                             .itemType((ItemType) PixelmonItemsHeld.powerBracer)
-                                            .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().hp)))
+                                            .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pokemon.getEVs().hp)))
                                             .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "HP EVs"))
                                             .build()
                                     )
@@ -497,21 +267,22 @@ public class EVModifier implements Modifier {
                             .itemType((ItemType) PixelmonItems.potion)
                             .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Reset EVs"))
                             .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                    Config.resetEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                    Config.resetEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
+                                    Config.resetEvsCost * getMultiplier(pokemon) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
+                                    Config.resetEvsCost * getMultiplier(pokemon) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
                             )))
                             .build()
             ));
-        if (Config.randomMaxEvsCost > 0)
+        }
+        if (Config.randomMaxEvsCost > 0) {
             builder.putElement(33, new ActionableElement(
                     new RunnableAction(container, ActionType.NONE, "", c -> {
-                        if (Utils.getBal(player) >= Config.randomMaxEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1)) {
-                            Utils.withdraw(player, Config.randomMaxEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
-                            pixelmon.getEVs().randomizeMaxEVs();
+                        if (Utils.getBal(player) >= Config.randomMaxEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pokemon.getSpecies() == p) || pokemon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1)) {
+                            Utils.withdraw(player, Config.randomMaxEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pokemon.getSpecies() == p) || pokemon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
+                            pokemon.getEVs().randomizeMaxEVs();
                             player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(45)).ifPresent(inv ->
                                     inv.set(ItemStack.builder()
                                             .itemType((ItemType) PixelmonItemsHeld.powerWeight)
-                                            .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().speed)))
+                                            .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pokemon.getEVs().speed)))
                                             .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Speed EVs"))
                                             .build()
                                     )
@@ -519,7 +290,7 @@ public class EVModifier implements Modifier {
                             player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(36)).ifPresent(inv ->
                                     inv.set(ItemStack.builder()
                                             .itemType((ItemType) PixelmonItemsHeld.powerBelt)
-                                            .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().specialDefence)))
+                                            .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pokemon.getEVs().specialDefence)))
                                             .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Special Defence EVs"))
                                             .build()
                                     )
@@ -527,7 +298,7 @@ public class EVModifier implements Modifier {
                             player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(27)).ifPresent(inv ->
                                     inv.set(ItemStack.builder()
                                             .itemType((ItemType) PixelmonItemsHeld.powerAnklet)
-                                            .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().specialAttack)))
+                                            .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pokemon.getEVs().specialAttack)))
                                             .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Special Attack EVs"))
                                             .build()
                                     )
@@ -535,7 +306,7 @@ public class EVModifier implements Modifier {
                             player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(18)).ifPresent(inv ->
                                     inv.set(ItemStack.builder()
                                             .itemType((ItemType) PixelmonItemsHeld.powerLens)
-                                            .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().defence)))
+                                            .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pokemon.getEVs().defence)))
                                             .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Defence EVs"))
                                             .build()
                                     )
@@ -543,7 +314,7 @@ public class EVModifier implements Modifier {
                             player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(9)).ifPresent(inv ->
                                     inv.set(ItemStack.builder()
                                             .itemType((ItemType) PixelmonItemsHeld.powerBand)
-                                            .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().attack)))
+                                            .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pokemon.getEVs().attack)))
                                             .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Attack EVs"))
                                             .build()
                                     )
@@ -551,7 +322,7 @@ public class EVModifier implements Modifier {
                             player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(0)).ifPresent(inv ->
                                     inv.set(ItemStack.builder()
                                             .itemType((ItemType) PixelmonItemsHeld.powerBracer)
-                                            .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pixelmon.getEVs().hp)))
+                                            .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, pokemon.getEVs().hp)))
                                             .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "HP EVs"))
                                             .build()
                                     )
@@ -562,11 +333,12 @@ public class EVModifier implements Modifier {
                             .itemType((ItemType) PixelmonItems.maxPotion)
                             .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Randomly Max EVs"))
                             .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(
-                                    Config.randomMaxEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                    Config.randomMaxEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
+                                    Config.randomMaxEvsCost * getMultiplier(pokemon) > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
+                                    Config.randomMaxEvsCost * getMultiplier(pokemon) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
                             )))
                             .build()
             ));
+        }
         container.addState(builder.build("evs"));
         container.openState(player, "evs");
         return false;

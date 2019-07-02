@@ -46,16 +46,27 @@ import java.util.List;
 )
 public class PokeBuilder {
 
+    private static PokeBuilder instance;
+    private static List<Modifier> modifiers;
+    private static Currency currency;
+    @Inject
+    private Logger logger;
+
     @Inject
     @DefaultConfig(sharedRoot = false)
     private ConfigurationLoader<CommentedConfigurationNode> loader;
 
-    @Inject
-    public Logger logger;
+    public static PokeBuilder getInstance() {
+        return instance;
+    }
 
-    private static PokeBuilder instance;
-    private static List<Modifier> modifiers;
-    private static Currency currency;
+    public static List<Modifier> getModifiers() {
+        return modifiers;
+    }
+
+    public static Currency getCurrency() {
+        return currency;
+    }
 
     @Listener
     public void onPreInit(GamePreInitializationEvent event) {
@@ -119,17 +130,5 @@ public class PokeBuilder {
                 }
             }
         }
-    }
-
-    public static PokeBuilder getInstance() {
-        return instance;
-    }
-
-    public static List<Modifier> getModifiers() {
-        return modifiers;
-    }
-
-    public static Currency getCurrency() {
-        return currency;
     }
 }
