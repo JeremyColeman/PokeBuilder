@@ -137,9 +137,8 @@ public class EVModifier implements Modifier {
                     builder.putElement(i + 2, new ActionableElement(
                                     new RunnableAction(container, ActionType.NONE, "", c -> {
                                         try {
-                                            if (Utils.getBal(player) >= getCost(pokemon, type) && (Integer) field.get(pokemon.getEVs()) + 1 <= EVStore.MAX_EVS && MAX_TOTAL_EVS - Arrays.stream(pokemon.getEVs().getArray()).sum() > 0) {
+                                            if (Utils.withdrawBalance(player, getCost(pokemon, type)) && (Integer) field.get(pokemon.getEVs()) + 1 <= EVStore.MAX_EVS && MAX_TOTAL_EVS - Arrays.stream(pokemon.getEVs().getArray()).sum() > 0) {
                                                 field.set(pokemon.getEVs(), ((Integer) field.get(pokemon.getEVs())) + 1);
-                                                Utils.withdraw(player, getCost(pokemon, type));
                                                 player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(i)).ifPresent(inv -> {
                                                             try {
                                                                 inv.set(ItemStack.builder()
@@ -154,7 +153,8 @@ public class EVModifier implements Modifier {
                                                             }
                                                         }
                                                 );
-                                            }
+                                            } else Utils.sendPlayerError(player, "You can't afford this!");
+
                                         } catch (Exception e) {
                                             e.printStackTrace();
                                         }
@@ -173,9 +173,8 @@ public class EVModifier implements Modifier {
                     builder.putElement(i + 3, new ActionableElement(
                                     new RunnableAction(container, ActionType.NONE, "", c -> {
                                         try {
-                                            if (Utils.getBal(player) >= getCost(pokemon, type) * 10 && (Integer) field.get(pokemon.getEVs()) + 10 <= EVStore.MAX_EVS && MAX_TOTAL_EVS - Arrays.stream(pokemon.getEVs().getArray()).sum() > 0) {
+                                            if (Utils.withdrawBalance(player, getCost(pokemon, type) * 10) && (Integer) field.get(pokemon.getEVs()) + 10 <= EVStore.MAX_EVS && MAX_TOTAL_EVS - Arrays.stream(pokemon.getEVs().getArray()).sum() > 0) {
                                                 field.set(pokemon.getEVs(), ((Integer) field.get(pokemon.getEVs())) + 10);
-                                                Utils.withdraw(player, getCost(pokemon, type) * 10);
                                                 player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(i)).ifPresent(inv -> {
                                                             try {
                                                                 inv.set(ItemStack.builder()
@@ -190,7 +189,7 @@ public class EVModifier implements Modifier {
                                                             }
                                                         }
                                                 );
-                                            }
+                                            } else Utils.sendPlayerError(player, "You can't afford this!");
                                         } catch (Exception e) {
                                             e.printStackTrace();
                                         }
@@ -216,8 +215,8 @@ public class EVModifier implements Modifier {
         if (Config.resetEvsCost > 0) {
             builder.putElement(24, new ActionableElement(
                     new RunnableAction(container, ActionType.NONE, "", c -> {
-                        if (Utils.getBal(player) >= Config.resetEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pokemon.getSpecies() == p) || pokemon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1)) {
-                            Utils.withdraw(player, Config.resetEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pokemon.getSpecies() == p) || pokemon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
+                        double cost = Config.resetEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pokemon.getSpecies() == p) || pokemon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1);
+                        if (Utils.withdrawBalance(player, cost)) {
                             pokemon.getStats().evs = new EVStore();
                             player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(45)).ifPresent(inv ->
                                     inv.set(ItemStack.builder()
@@ -267,7 +266,7 @@ public class EVModifier implements Modifier {
                                             .build()
                                     )
                             );
-                        }
+                        } else Utils.sendPlayerError(player, "You can't afford this!");
                     }),
                     ItemStack.builder()
                             .itemType((ItemType) PixelmonItems.potion)
@@ -282,8 +281,8 @@ public class EVModifier implements Modifier {
         if (Config.randomMaxEvsCost > 0) {
             builder.putElement(33, new ActionableElement(
                     new RunnableAction(container, ActionType.NONE, "", c -> {
-                        if (Utils.getBal(player) >= Config.randomMaxEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pokemon.getSpecies() == p) || pokemon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1)) {
-                            Utils.withdraw(player, Config.randomMaxEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pokemon.getSpecies() == p) || pokemon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1));
+                        double cost = Config.randomMaxEvsCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pokemon.getSpecies() == p) || pokemon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1);
+                        if (Utils.withdrawBalance(player, cost)) {
                             pokemon.getEVs().randomizeMaxEVs();
                             player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(45)).ifPresent(inv ->
                                     inv.set(ItemStack.builder()
@@ -333,7 +332,7 @@ public class EVModifier implements Modifier {
                                             .build()
                                     )
                             );
-                        }
+                        } else Utils.sendPlayerError(player, "You can't afford this!");
                     }),
                     ItemStack.builder()
                             .itemType((ItemType) PixelmonItems.maxPotion)

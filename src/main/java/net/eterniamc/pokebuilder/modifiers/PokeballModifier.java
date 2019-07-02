@@ -43,9 +43,12 @@ public class PokeballModifier implements Modifier {
         for (EnumPokeballs ball : EnumPokeballs.values())
             builder.addElement(new ActionableElement(
                             new RunnableAction(container, ActionType.CLOSE, "", context -> {
+                                double cost = Config.pokeballModifierCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1);
+                                if (data.getGui() != null && !Utils.withdrawBalance(player, cost)) {
+                                    Utils.sendPlayerError(player, "You can't afford this!");
+                                    return;
+                                }
                                 pixelmon.setCaughtBall(ball);
-                                if (data.getGui() != null)
-                                    Utils.withdraw(player, getCost(pixelmon));
                             }),
                             ItemStack.builder()
                                     .itemType((ItemType) ball.getItem())

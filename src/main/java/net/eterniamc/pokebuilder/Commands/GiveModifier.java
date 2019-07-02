@@ -11,6 +11,7 @@ import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class GiveModifier implements CommandExecutor {
@@ -23,7 +24,11 @@ public class GiveModifier implements CommandExecutor {
                         GenericArguments.choices(
                                 Text.of("modifier"),
                                 () -> PokeBuilder.getModifiers().stream().map(m -> m.getClass().getSimpleName().replace("Modifier", "")).collect(Collectors.toList()),
-                                s -> PokeBuilder.getModifiers().stream().filter(m -> m.getClass().getSimpleName().replace("Modifier", "").equals(s)).findFirst().get()
+                                s -> {
+                                    Optional<Modifier> optionalModifier = PokeBuilder.getModifiers().stream().filter(m -> m.getClass().getSimpleName().replace("Modifier", "").equals(s)).findFirst();
+                                    if (!optionalModifier.isPresent()) return Optional.empty();
+                                    return optionalModifier.get();
+                                }
                         )
                 )
                 .executor(new GiveModifier())
@@ -35,6 +40,6 @@ public class GiveModifier implements CommandExecutor {
         Player player = args.<Player>getOne("player").get();
         Modifier modifier = args.<Modifier>getOne("modifier").get();
         player.getInventory().offer(modifier.getItemStack(player, null));
-        return CommandResult.empty();
+        return CommandResult.success();
     }
 }
