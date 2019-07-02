@@ -13,6 +13,7 @@ import com.pixelmonmod.pixelmon.config.PixelmonItemsPokeballs;
 import com.pixelmonmod.pixelmon.enums.EnumSpecies;
 import com.pixelmonmod.pixelmon.items.ItemPixelmonSprite;
 import com.pixelmonmod.pixelmon.storage.PlayerPartyStorage;
+import net.eterniamc.pokebuilder.Configuration.Config;
 import net.eterniamc.pokebuilder.modifiers.Modifier;
 import net.minecraft.entity.player.EntityPlayerMP;
 import org.spongepowered.api.data.key.Keys;
@@ -55,7 +56,7 @@ public class PokeBuilderGui {
         }
         for (Pokemon pixelmon : party) {
             if (pixelmon != null) {
-                if (!config.blacklistedPokemon.stream().anyMatch(s -> s.equalsIgnoreCase(pixelmon.getDisplayName()))) {
+                if (!Config.blacklistedPokemon.stream().anyMatch(s -> s.equalsIgnoreCase(pixelmon.getDisplayName()))) {
                     main.addElement(new ActionableElement(
                                     new RunnableAction(container, ActionType.NONE, "", c -> createEditorPage(container, pixelmon, player).openState(player, "editor")),
                                     ItemStack.builder()
@@ -76,19 +77,19 @@ public class PokeBuilderGui {
                 main.addElement(new ActionableElement(
                         new RunnableAction(container, ActionType.CLOSE, "", c -> {
                             double cash = Utils.getBal(player);
-                            if (cash < config.pokemonCost && cash < config.legendaryCost)
+                            if (cash < Config.pokemonCost && cash < Config.legendaryCost)
                                 Utils.sendPlayerError(player, "You can't afford this!");
                             else {
-                                ChatGuiHelper.addGUI("Enter the name of the pokemon you want, regular pokemon getCost(pokemon) $" + config.pokemonCost + " and legendaries getCost(pokemon) $" + config.legendaryCost, player, text -> {
+                                ChatGuiHelper.addGUI("Enter the name of the pokemon you want, regular pokemon getCost(pokemon) $" + Config.pokemonCost + " and legendaries getCost(pokemon) $" + Config.legendaryCost, player, text -> {
                                     EnumSpecies pokemon = EnumSpecies.getFromNameAnyCase(text.toPlain());
                                     Pokemon pixelmon1 = Pixelmon.pokemonFactory.create(pokemon);
                                     if (pokemon == null) {
                                         Utils.sendPlayerError(player, "Invalid Pokemon");
                                         return;
                                     } else if (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> p == pokemon)) {
-                                        Utils.withdraw(player, config.legendaryCost);
+                                        Utils.withdraw(player, Config.legendaryCost);
                                     } else {
-                                        Utils.withdraw(player, config.pokemonCost);
+                                        Utils.withdraw(player, Config.pokemonCost);
                                     }
                                     pixelmon1.setOriginalTrainer((EntityPlayerMP) player);
                                     store.add(pixelmon1);
@@ -99,12 +100,12 @@ public class PokeBuilderGui {
                                 .itemType((ItemType) PixelmonItemsPokeballs.pokeBall)
                                 .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "Create a new Pokemon"))
                                 .add(Keys.ITEM_LORE, Arrays.asList(
-                                        Text.of(config.pokemonCost > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                                "Regular Pokemon: " + config.pokemonCost + " " + currency.getPluralDisplayName().toPlain()
+                                        Text.of(Config.pokemonCost > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
+                                                "Regular Pokemon: " + Config.pokemonCost + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
                                         ),
                                         Text.of(
-                                                config.legendaryCost > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
-                                                "Legendaries: " + config.legendaryCost + " " + currency.getPluralDisplayName().toPlain()
+                                                Config.legendaryCost > Utils.getBal(player) ? TextColors.RED : TextColors.GREEN,
+                                                "Legendaries: " + Config.legendaryCost + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain()
                                         )
                                 ))
                                 .build()
@@ -144,8 +145,8 @@ public class PokeBuilderGui {
                         .build()
                 )
                 .setParent("main");
-        for (int i = 0; i < modifiers.size(); i++) {
-            Modifier modifier = modifiers.get(i);
+        for (int i = 0; i < PokeBuilder.getModifiers().size(); i++) {
+            Modifier modifier = PokeBuilder.getModifiers().get(i);
             if (modifier.getCost(pokemon) < 0)
                 builder.putElement(i / 2 * 9 + i % 2 * 8, new Element(
                         ItemStack.builder()

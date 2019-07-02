@@ -1,16 +1,25 @@
 package net.eterniamc.pokebuilder;
 
 import com.google.inject.Inject;
+import com.pixelmonmod.pixelmon.entities.pixelmon.EntityPixelmon;
 import net.eterniamc.pokebuilder.Commands.Base;
+import net.eterniamc.pokebuilder.Commands.GiveModifier;
 import net.eterniamc.pokebuilder.Configuration.Config;
 import net.eterniamc.pokebuilder.Configuration.ConfigManager;
 import net.eterniamc.pokebuilder.modifiers.*;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumHand;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.DefaultConfig;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.entity.InteractEntityEvent;
+import org.spongepowered.api.event.filter.cause.Root;
 import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.GamePostInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
@@ -82,6 +91,7 @@ public class PokeBuilder {
         }
 
         Sponge.getCommandManager().register(this, Base.getSpec(), "pokebuilder", "builder");
+        Sponge.getCommandManager().register(this, GiveModifier.getSpec(), "givemodifier");
         logger.info("A Completely Legal All-Inclusive Genetic Modifier For Pokemon AKA PokeBuilder has loaded successfully");
     }
 
@@ -89,6 +99,26 @@ public class PokeBuilder {
     public void onReload(GameReloadEvent event) {
         ConfigManager.save();
         ConfigManager.load();
+    }
+
+    @Listener
+    public void onEntityInteract(InteractEntityEvent event, @Root Player p) {
+        if (event.getTargetEntity() instanceof EntityPixelmon) {
+            EntityPlayerMP player = (EntityPlayerMP) p;
+            NBTTagCompound nbt = player.getHeldItemMainhand().getTagCompound();
+            if (nbt != null && nbt.hasKey("Modifier")) {
+                try {
+                    Modifier modifier = (Modifier) Class.forName(nbt.getString("Modifier")).newInstance();
+                    if (modifier.run(new ModifierData(((EntityPixelmon) event.getTargetEntity()).getPokemonData(), p, null))) {
+                        player.getHeldItemMainhand().shrink(1);
+                        if (player.getHeldItemMainhand().isEmpty())
+                            player.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     public static PokeBuilder getInstance() {
