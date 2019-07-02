@@ -31,19 +31,22 @@ public class PokeballModifier implements Modifier {
     public boolean run(ModifierData data) {
         Pokemon pixelmon = data.getPokemon();
         Player player = data.getPlayer();
-        StateContainer container = data.getGui();
+        StateContainer container = data.getGui() == null ? new StateContainer() : data.getGui();
         if (container.hasState("pokeball"))
             container.removeState("pokeball");
-        Page.PageBuilder natureModifier = Page.builder()
+        Page.PageBuilder builder = Page.builder()
                 .setAutoPaging(true)
                 .setTitle(Text.of("Pokeball Modifier"))
                 .setParent("editor")
                 .setEmptyStack(Utils.empty());
+        if (data.getGui() == null) {
+            builder.setParent(null);
+        }
         for (EnumPokeballs ball : EnumPokeballs.values())
-            natureModifier.addElement(new ActionableElement(
+            builder.addElement(new ActionableElement(
                             new RunnableAction(container, ActionType.CLOSE, "", context -> {
                                 double cost = Config.pokeballModifierCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1);
-                                if (!Utils.withdrawBalance(player, cost)) {
+                                if (data.getGui() != null && !Utils.withdrawBalance(player, cost)) {
                                     Utils.sendPlayerError(player, "You can't afford this!");
                                     return;
                                 }
@@ -56,7 +59,7 @@ public class PokeballModifier implements Modifier {
                                     .build()
                     )
             );
-        container.addState(natureModifier.build("pokeball"));
+        container.addState(builder.build("pokeball"));
         container.openState(player, "pokeball");
         return false;
     }

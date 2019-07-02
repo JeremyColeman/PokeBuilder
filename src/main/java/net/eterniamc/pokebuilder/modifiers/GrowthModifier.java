@@ -34,10 +34,10 @@ public class GrowthModifier implements Modifier {
     public boolean run(ModifierData data) {
         Pokemon pixelmon = data.getPokemon();
         Player player = data.getPlayer();
-        StateContainer container = data.getGui();
+        StateContainer container = data.getGui() == null ? new StateContainer() : data.getGui();
         if (container.hasState("growth"))
             container.removeState("growth");
-        Page.PageBuilder natureModifier = Page.builder()
+        Page.PageBuilder builder = Page.builder()
                 .setAutoPaging(true)
                 .setTitle(Text.of("Growth Modifier"))
                 .setParent("editor")
@@ -45,10 +45,10 @@ public class GrowthModifier implements Modifier {
         List<EnumGrowth> growths = new ArrayList<>(Arrays.asList(EnumGrowth.values()));
         growths.sort((growth1, growth2) -> growth1.scaleValue - growth2.scaleValue > 0 ? 1 : growth1.scaleValue - growth2.scaleValue < 0 ? -1 : 0);
         for (EnumGrowth growth : growths)
-            natureModifier.addElement(new ActionableElement(
+            builder.addElement(new ActionableElement(
                             new RunnableAction(container, ActionType.CLOSE, "", context -> {
                                 double cost = Config.growthModifierCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1);
-                                if (!Utils.withdrawBalance(player, cost)) {
+                                if (data.getGui() != null && !Utils.withdrawBalance(player, cost)) {
                                     Utils.sendPlayerError(player, "You can't afford this!");
                                     return;
                                 }
@@ -62,7 +62,7 @@ public class GrowthModifier implements Modifier {
                                     .build()
                     )
             );
-        container.addState(natureModifier.build("growth"));
+        container.addState(builder.build("growth"));
         container.openState(player, "growth");
         return false;
     }

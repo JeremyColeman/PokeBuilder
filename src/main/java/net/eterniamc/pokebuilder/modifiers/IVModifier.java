@@ -76,15 +76,15 @@ public class IVModifier implements Modifier {
             case "hp":
                 return (ItemType) PixelmonItemsHeld.powerBracer;
             case "attack":
-                return (ItemType) PixelmonItemsHeld.powerLens;
-            case "defence":
-                return (ItemType) PixelmonItemsHeld.powerBelt;
-            case "specialAttack":
                 return (ItemType) PixelmonItemsHeld.powerBand;
-            case "specialDefence":
-                return (ItemType) PixelmonItemsHeld.powerWeight;
-            case "speed":
+            case "defence":
+                return (ItemType) PixelmonItemsHeld.powerLens;
+            case "specialAttack":
                 return (ItemType) PixelmonItemsHeld.powerAnklet;
+            case "specialDefence":
+                return (ItemType) PixelmonItemsHeld.powerBelt;
+            case "speed":
+                return (ItemType) PixelmonItemsHeld.powerWeight;
             default:
                 return ItemTypes.BARRIER;
         }
@@ -100,6 +100,10 @@ public class IVModifier implements Modifier {
         Pokemon pokemon = data.getPokemon();
         Player player = data.getPlayer();
         StateContainer container = data.getGui();
+        if (container == null) {
+            pokemon.getStats().ivs.maximizeIVs();
+            return true;
+        }
         if (container.hasState("ivs"))
             container.removeState("ivs");
         Page.PageBuilder builder = Page.builder()
@@ -115,11 +119,11 @@ public class IVModifier implements Modifier {
             );
         }
         List<Field> fields = Arrays.stream(IVStore.class.getDeclaredFields()).filter(f -> f.getType() == int.class && !f.getName().contains("_")).collect(Collectors.toList());
-        int i = 0;
+        int a = 0;
         try {
             for (Field field : fields) {
                 String type = field.getName();
-                i++;
+                int i = a;
                 builder.putElement(i, new Element(ItemStack.builder()
                         .itemType((ItemType) PixelmonItemsHeld.powerBracer)
                         .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, field.get(pokemon.getEVs()))))
@@ -136,7 +140,7 @@ public class IVModifier implements Modifier {
                                                             try {
                                                                 inv.set(ItemStack.builder()
                                                                         .itemType(getGuiItem(type))
-                                                                        .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, field.get(pokemon.getEVs()))))
+                                                                        .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, field.get(pokemon.getIVs()))))
                                                                         .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, Utils.fromCamelToDisplay(type).replace("Hp", "HP") + " IVs"))
                                                                         .build()
                                                                 );
@@ -164,13 +168,14 @@ public class IVModifier implements Modifier {
                     builder.putElement(i + 3, new ActionableElement(
                                     new RunnableAction(container, ActionType.NONE, "", c -> {
                                         try {
-                                            if (Utils.withdrawBalance(player, getCost(pokemon, type)) && (Integer) field.get(pokemon.getEVs()) + 10 <= IVStore.MAX_IVS) {
-                                                field.set(pokemon.getEVs(), ((Integer) field.get(pokemon.getEVs())) + 1);
-                                                player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(0)).ifPresent(inv -> {
+                                            if (Utils.withdrawBalance(player, getCost(pokemon, type)) && (Integer) field.get(pokemon.getIVs()) + 10 <= IVStore.MAX_IVS) {
+                                                field.set(pokemon.getIVs(), ((Integer) field.get(pokemon.getIVs())) + 1);
+                                                player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(i)).ifPresent(inv -> {
                                                             try {
                                                                 inv.set(ItemStack.builder()
                                                                         .itemType(getGuiItem(type))
-                                                                        .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, field.get(pokemon.getEVs()))))
+                                                                        .quantity((Integer) field.get(pokemon.getIVs()))
+                                                                        .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, field.get(pokemon.getIVs()))))
                                                                         .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, Utils.fromCamelToDisplay(type).replace("Hp", "HP") + " IVs"))
                                                                         .build()
                                                                 );
@@ -197,7 +202,7 @@ public class IVModifier implements Modifier {
                             )
                     );
                 }
-                i += 9;
+                a += 9;
             }
         } catch (IllegalAccessException e) {
             e.printStackTrace();

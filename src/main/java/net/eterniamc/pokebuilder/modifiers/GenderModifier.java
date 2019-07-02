@@ -32,19 +32,19 @@ public class GenderModifier implements Modifier {
     public boolean run(ModifierData data) {
         Pokemon pixelmon = data.getPokemon();
         Player player = data.getPlayer();
-        StateContainer container = data.getGui();
+        StateContainer container = data.getGui() == null ? new StateContainer() : data.getGui();
         if (container.hasState("gender"))
             container.removeState("gender");
-        Page.PageBuilder natureModifier = Page.builder()
+        Page.PageBuilder builder = Page.builder()
                 .setAutoPaging(true)
                 .setTitle(Text.of("Gender Modifier"))
                 .setParent("editor")
                 .setEmptyStack(Utils.empty());
         for (Gender gender : pixelmon.getBaseStats().malePercent < 0 ? Collections.singletonList(Gender.None) : Arrays.asList(Gender.Female, Gender.Male))
-            natureModifier.addElement(new ActionableElement(
+            builder.addElement(new ActionableElement(
                             new RunnableAction(container, ActionType.CLOSE, "", context -> {
                                 double cost = Config.genderModifierCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1);
-                                if (!Utils.withdrawBalance(player, cost)) {
+                                if (data.getGui() != null && !Utils.withdrawBalance(player, cost)) {
                                     Utils.sendPlayerError(player, "You can't afford this!");
                                     return;
                                 }
@@ -58,7 +58,7 @@ public class GenderModifier implements Modifier {
                                     .build()
                     )
             );
-        container.addState(natureModifier.build("gender"));
+        container.addState(builder.build("gender"));
         container.openState(player, "gender");
         return false;
     }

@@ -30,25 +30,25 @@ public class NatureModifier implements Modifier {
 
     @Override
     public boolean run(ModifierData data) {
-        Pokemon pixelmon = data.getPokemon();
+        Pokemon pokemon = data.getPokemon();
         Player player = data.getPlayer();
-        StateContainer container = data.getGui();
+        StateContainer container = data.getGui() == null ? new StateContainer() : data.getGui();
         if (container.hasState("nature"))
             container.removeState("nature");
-        Page.PageBuilder natureModifier = Page.builder()
+        Page.PageBuilder builder = Page.builder()
                 .setAutoPaging(true)
                 .setTitle(Text.of("Nature Modifier"))
                 .setParent("editor")
                 .setEmptyStack(Utils.empty());
         for (EnumNature nature : EnumNature.values())
-            natureModifier.addElement(new ActionableElement(
+            builder.addElement(new ActionableElement(
                             new RunnableAction(container, ActionType.CLOSE, "", context -> {
-                                double cost = Config.natureModifierCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1);
-                                if (!Utils.withdrawBalance(player, cost)) {
+                                double cost = Config.natureModifierCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pokemon.getSpecies() == p) || pokemon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1);
+                                if (data.getGui() != null && !Utils.withdrawBalance(player, cost)) {
                                     Utils.sendPlayerError(player, "You can't afford this!");
                                     return;
                                 }
-                                pixelmon.setNature(nature);
+                                pokemon.setNature(nature);
                             }),
                             ItemStack.builder()
                                     .itemType((ItemType) PixelmonItemsBadges.voltageBadge)
@@ -57,7 +57,7 @@ public class NatureModifier implements Modifier {
                                     .build()
                     )
             );
-        container.addState(natureModifier.build("nature"));
+        container.addState(builder.build("nature"));
         container.openState(player, "nature");
         return false;
     }

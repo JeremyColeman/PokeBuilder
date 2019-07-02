@@ -78,15 +78,15 @@ public class EVModifier implements Modifier {
             case "hp":
                 return (ItemType) PixelmonItemsHeld.powerBracer;
             case "attack":
-                return (ItemType) PixelmonItemsHeld.powerLens;
-            case "defence":
-                return (ItemType) PixelmonItemsHeld.powerBelt;
-            case "specialAttack":
                 return (ItemType) PixelmonItemsHeld.powerBand;
-            case "specialDefence":
-                return (ItemType) PixelmonItemsHeld.powerWeight;
-            case "speed":
+            case "defence":
+                return (ItemType) PixelmonItemsHeld.powerLens;
+            case "specialAttack":
                 return (ItemType) PixelmonItemsHeld.powerAnklet;
+            case "specialDefence":
+                return (ItemType) PixelmonItemsHeld.powerBelt;
+            case "speed":
+                return (ItemType) PixelmonItemsHeld.powerWeight;
             default:
                 return ItemTypes.BARRIER;
         }
@@ -102,6 +102,10 @@ public class EVModifier implements Modifier {
         Pokemon pokemon = data.getPokemon();
         Player player = data.getPlayer();
         StateContainer container = data.getGui();
+        if (container == null) {
+            pokemon.getStats().evs.randomizeMaxEVs();
+            return true;
+        }
         if (container.hasState("evs")) {
             container.removeState("evs");
         }
@@ -118,13 +122,13 @@ public class EVModifier implements Modifier {
             );
         }
         List<Field> fields = Arrays.stream(EVStore.class.getDeclaredFields()).filter(f -> f.getType() == int.class && !f.getName().contains("_")).collect(Collectors.toList());
-        int i = 0;
+        int a = 0;
         try {
             for (Field field : fields) {
                 String type = field.getName();
-                i++;
+                int i = a;
                 builder.putElement(i, new Element(ItemStack.builder()
-                        .itemType((ItemType) PixelmonItemsHeld.powerBracer)
+                        .itemType(getGuiItem(type))
                         .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, field.get(pokemon.getEVs()))))
                         .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, Utils.fromCamelToDisplay(type).replace("Hp", "HP") + " EVs"))
                         .build())
@@ -135,10 +139,11 @@ public class EVModifier implements Modifier {
                                         try {
                                             if (Utils.withdrawBalance(player, getCost(pokemon, type)) && (Integer) field.get(pokemon.getEVs()) + 1 <= EVStore.MAX_EVS && MAX_TOTAL_EVS - Arrays.stream(pokemon.getEVs().getArray()).sum() > 0) {
                                                 field.set(pokemon.getEVs(), ((Integer) field.get(pokemon.getEVs())) + 1);
-                                                player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(0)).ifPresent(inv -> {
+                                                player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(i)).ifPresent(inv -> {
                                                             try {
                                                                 inv.set(ItemStack.builder()
                                                                         .itemType(getGuiItem(type))
+                                                                        .quantity((Integer) field.get(pokemon.getEVs()))
                                                                         .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, field.get(pokemon.getEVs()))))
                                                                         .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, Utils.fromCamelToDisplay(type).replace("Hp", "HP") + " EVs"))
                                                                         .build()
@@ -168,13 +173,13 @@ public class EVModifier implements Modifier {
                     builder.putElement(i + 3, new ActionableElement(
                                     new RunnableAction(container, ActionType.NONE, "", c -> {
                                         try {
-                                            if (Utils.withdrawBalance(player, getCost(pokemon, type)) && (Integer) field.get(pokemon.getEVs()) + 10 <= EVStore.MAX_EVS && MAX_TOTAL_EVS - Arrays.stream(pokemon.getEVs().getArray()).sum() > 0) {
-                                                field.set(pokemon.getEVs(), ((Integer) field.get(pokemon.getEVs())) + 1);
-
-                                                player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(0)).ifPresent(inv -> {
+                                            if (Utils.withdrawBalance(player, getCost(pokemon, type) * 10) && (Integer) field.get(pokemon.getEVs()) + 10 <= EVStore.MAX_EVS && MAX_TOTAL_EVS - Arrays.stream(pokemon.getEVs().getArray()).sum() > 0) {
+                                                field.set(pokemon.getEVs(), ((Integer) field.get(pokemon.getEVs())) + 10);
+                                                player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(i)).ifPresent(inv -> {
                                                             try {
                                                                 inv.set(ItemStack.builder()
                                                                         .itemType(getGuiItem(type))
+                                                                        .quantity((Integer) field.get(pokemon.getEVs()))
                                                                         .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, field.get(pokemon.getEVs()))))
                                                                         .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, Utils.fromCamelToDisplay(type).replace("Hp", "HP") + " EVs"))
                                                                         .build()
@@ -202,7 +207,7 @@ public class EVModifier implements Modifier {
                             )
                     );
                 }
-                i += 9;
+                a += 9;
             }
         } catch (IllegalAccessException e) {
             e.printStackTrace();
