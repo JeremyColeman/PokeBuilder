@@ -9,7 +9,6 @@ import com.pixelmonmod.pixelmon.api.pokemon.Pokemon;
 import com.pixelmonmod.pixelmon.config.PixelmonItemsBadges;
 import com.pixelmonmod.pixelmon.config.PixelmonItemsHeld;
 import com.pixelmonmod.pixelmon.entities.pixelmon.stats.Gender;
-import com.pixelmonmod.pixelmon.enums.EnumSpecies;
 import net.eterniamc.pokebuilder.Configuration.Config;
 import net.eterniamc.pokebuilder.ModifierData;
 import net.eterniamc.pokebuilder.Utils;
@@ -40,6 +39,9 @@ public class GenderModifier implements Modifier {
                 .setTitle(Text.of("Gender Modifier"))
                 .setParent("editor")
                 .setEmptyStack(Utils.empty());
+        if (data.getGui() == null) {
+            builder.setParent(null);
+        }
         for (Gender gender : pixelmon.getBaseStats().malePercent < 0 ? Collections.singletonList(Gender.None) : Arrays.asList(Gender.Female, Gender.Male))
             builder.addElement(new ActionableElement(
                             new RunnableAction(container, ActionType.CLOSE, "", context -> {
@@ -49,7 +51,6 @@ public class GenderModifier implements Modifier {
                                     return;
                                 }
                                 pixelmon.setGender(gender);
-
                             }),
                             ItemStack.builder()
                                     .itemType((ItemType) PixelmonItemsBadges.voltageBadge)

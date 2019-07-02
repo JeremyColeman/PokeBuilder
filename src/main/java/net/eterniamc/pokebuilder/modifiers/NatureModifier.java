@@ -9,7 +9,6 @@ import com.pixelmonmod.pixelmon.api.pokemon.Pokemon;
 import com.pixelmonmod.pixelmon.config.PixelmonItemsBadges;
 import com.pixelmonmod.pixelmon.config.PixelmonItemsHeld;
 import com.pixelmonmod.pixelmon.enums.EnumNature;
-import com.pixelmonmod.pixelmon.enums.EnumSpecies;
 import net.eterniamc.pokebuilder.Configuration.Config;
 import net.eterniamc.pokebuilder.ModifierData;
 import net.eterniamc.pokebuilder.Utils;
@@ -20,7 +19,6 @@ import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
-import java.util.Arrays;
 import java.util.Collections;
 
 /**
@@ -40,6 +38,9 @@ public class NatureModifier implements Modifier {
                 .setTitle(Text.of("Nature Modifier"))
                 .setParent("editor")
                 .setEmptyStack(Utils.empty());
+        if (data.getGui() == null) {
+            builder.setParent(null);
+        }
         for (EnumNature nature : EnumNature.values())
             builder.addElement(new ActionableElement(
                             new RunnableAction(container, ActionType.CLOSE, "", context -> {

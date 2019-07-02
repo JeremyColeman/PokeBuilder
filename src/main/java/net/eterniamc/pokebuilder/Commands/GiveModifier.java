@@ -40,6 +40,6 @@ public class GiveModifier implements CommandExecutor {
         Player player = args.<Player>getOne("player").get();
         Modifier modifier = args.<Modifier>getOne("modifier").get();
         player.getInventory().offer(modifier.getItemStack(player, null));
-        return CommandResult.empty();
+        return CommandResult.success();
     }
 }

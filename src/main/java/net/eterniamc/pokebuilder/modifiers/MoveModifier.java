@@ -9,7 +9,6 @@ import com.codehusky.huskyui.states.element.Element;
 import com.pixelmonmod.pixelmon.api.pokemon.Pokemon;
 import com.pixelmonmod.pixelmon.battles.attacks.Attack;
 import com.pixelmonmod.pixelmon.config.PixelmonItemsTMs;
-import com.pixelmonmod.pixelmon.enums.EnumSpecies;
 import net.eterniamc.pokebuilder.Configuration.Config;
 import net.eterniamc.pokebuilder.ModifierData;
 import net.eterniamc.pokebuilder.Utils;
@@ -24,7 +23,6 @@ import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
@@ -45,6 +43,9 @@ public class MoveModifier implements Modifier {
                 .setAutoPaging(true)
                 .setParent("editor")
                 .setEmptyStack(Utils.empty());
+        if (data.getGui() == null) {
+            builder.setParent(null);
+        }
         for (int it = 0; it < 4; it++) {
             final int i = it;
             builder.addElement(new Element(ItemStack.empty()));

@@ -7,7 +7,6 @@ import com.codehusky.huskyui.states.action.runnable.RunnableAction;
 import com.codehusky.huskyui.states.element.ActionableElement;
 import com.pixelmonmod.pixelmon.api.pokemon.Pokemon;
 import com.pixelmonmod.pixelmon.config.PixelmonItemsPokeballs;
-import com.pixelmonmod.pixelmon.enums.EnumSpecies;
 import com.pixelmonmod.pixelmon.enums.items.EnumPokeballs;
 import net.eterniamc.pokebuilder.Configuration.Config;
 import net.eterniamc.pokebuilder.ModifierData;
@@ -19,7 +18,6 @@ import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
-import java.util.Arrays;
 import java.util.Collections;
 
 /**

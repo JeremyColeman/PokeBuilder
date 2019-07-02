@@ -125,8 +125,8 @@ public class IVModifier implements Modifier {
                 String type = field.getName();
                 int i = a;
                 builder.putElement(i, new Element(ItemStack.builder()
-                        .itemType((ItemType) PixelmonItemsHeld.powerBracer)
-                        .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, field.get(pokemon.getEVs()))))
+                        .itemType(getGuiItem(type))
+                        .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, field.get(pokemon.getIVs()))))
                         .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, Utils.fromCamelToDisplay(type).replace("Hp", "HP") + " IVs"))
                         .build())
                 );
@@ -134,12 +134,16 @@ public class IVModifier implements Modifier {
                     builder.putElement(i + 2, new ActionableElement(
                                     new RunnableAction(container, ActionType.NONE, "", c -> {
                                         try {
-                                            if (!Utils.withdrawBalance(player, getCost(pokemon, type)) && (Integer) field.get(pokemon.getEVs()) + 1 <= IVStore.MAX_IVS) {
-                                                field.set(pokemon.getEVs(), ((Integer) field.get(pokemon.getEVs())) + 1);
-                                                player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(0)).ifPresent(inv -> {
+                                            if (!Utils.withdrawBalance(player, getCost(pokemon, type)) && (Integer) field.get(pokemon.getIVs()) + 1 <= IVStore.MAX_IVS) {
+                                                field.set(pokemon.getIVs(), ((Integer) field.get(pokemon.getIVs())) + 1);
+                                                player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(i)).ifPresent(inv -> {
                                                             try {
                                                                 inv.set(ItemStack.builder()
                                                                         .itemType(getGuiItem(type))
+                                                            try {
+                                                                inv.set(ItemStack.builder()
+                                                                        .itemType(getGuiItem(type))
+                                                                        .quantity((Integer) field.get(pokemon.getIVs()))
                                                                         .add(Keys.ITEM_LORE, Collections.singletonList(Text.of(TextColors.WHITE, field.get(pokemon.getIVs()))))
                                                                         .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, Utils.fromCamelToDisplay(type).replace("Hp", "HP") + " IVs"))
                                                                         .build()

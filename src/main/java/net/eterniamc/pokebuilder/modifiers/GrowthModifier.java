@@ -9,7 +9,6 @@ import com.pixelmonmod.pixelmon.api.pokemon.Pokemon;
 import com.pixelmonmod.pixelmon.config.PixelmonItemsBadges;
 import com.pixelmonmod.pixelmon.config.PixelmonItemsHeld;
 import com.pixelmonmod.pixelmon.enums.EnumGrowth;
-import com.pixelmonmod.pixelmon.enums.EnumSpecies;
 import net.eterniamc.pokebuilder.Configuration.Config;
 import net.eterniamc.pokebuilder.ModifierData;
 import net.eterniamc.pokebuilder.Utils;
@@ -42,6 +41,9 @@ public class GrowthModifier implements Modifier {
                 .setTitle(Text.of("Growth Modifier"))
                 .setParent("editor")
                 .setEmptyStack(Utils.empty());
+        if (data.getGui() == null) {
+            builder.setParent(null);
+        }
         List<EnumGrowth> growths = new ArrayList<>(Arrays.asList(EnumGrowth.values()));
         growths.sort((growth1, growth2) -> growth1.scaleValue - growth2.scaleValue > 0 ? 1 : growth1.scaleValue - growth2.scaleValue < 0 ? -1 : 0);
         for (EnumGrowth growth : growths)
@@ -53,7 +55,6 @@ public class GrowthModifier implements Modifier {
                                     return;
                                 }
                                 pixelmon.setGrowth(growth);
-
                             }),
                             ItemStack.builder()
                                     .itemType((ItemType) PixelmonItemsBadges.voltageBadge)

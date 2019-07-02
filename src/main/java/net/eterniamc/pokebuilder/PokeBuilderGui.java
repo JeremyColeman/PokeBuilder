@@ -166,6 +166,7 @@ public class PokeBuilderGui {
                         new RunnableAction(container, ActionType.NONE, "", c -> {
                             if (!Utils.withdrawBalance(player, modifier.getCost(pokemon))) {
                                 if (modifier.run(new ModifierData(pokemon, player, container))) {
+                                    Utils.sendPlayerMessage(player, modifier.getCost(pokemon) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain() + " have been withdrawn from your account");
                                     if (!player.getOpenInventory().isPresent())
                                         container.openState(player, "editor");
                                     player.getOpenInventory().map(inv1 -> Lists.<Inventory>newArrayList(inv1.slots()).get(22)).ifPresent(inv ->
