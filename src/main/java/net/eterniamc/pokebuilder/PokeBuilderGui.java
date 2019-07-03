@@ -71,7 +71,7 @@ public class PokeBuilderGui {
                             )
                     );
                 }
-            } else {
+            } else if (Config.pokemonCost >= 0 && Config.legendaryCost >= 0) {
                 main.addElement(new ActionableElement(
                         new RunnableAction(container, ActionType.CLOSE, "", c -> {
                             double cash = Utils.getBal(player);
@@ -108,6 +108,15 @@ public class PokeBuilderGui {
                                 ))
                                 .build()
                 ));
+            } else {
+                main.addElement(
+                        new Element(
+                                ItemStack.builder()
+                                        .itemType((ItemType) PixelmonItemsPokeballs.pokeBall)
+                                        .add(Keys.DISPLAY_NAME, Text.of(TextColors.WHITE, "There is nothing in this slot"))
+                                        .build()
+                        )
+                );
             }
         }
         for (int i = 0; i < 11; i++) {

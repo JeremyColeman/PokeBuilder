@@ -90,7 +90,8 @@ public class PokeBuilder {
                 new MoveModifier(),
                 new NatureModifier(),
                 new PokeballModifier(),
-                new ShinyModifier()
+                new ShinyModifier(),
+                new GrowthModifier()
         );
 
         Sponge.getEventManager().registerListeners(this, new ChatGuiHelper());

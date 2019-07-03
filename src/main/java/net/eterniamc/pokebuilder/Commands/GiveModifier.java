@@ -19,12 +19,11 @@ public class GiveModifier implements CommandExecutor {
         return CommandSpec.builder()
                 .permission("pokebuilder.modifier.give")
                 .arguments(
-                        GenericArguments.playerOrSource(Text.of("player")),
-                        GenericArguments.choices(
-                                Text.of("modifier"),
-                                () -> PokeBuilder.getModifiers().stream().map(m -> m.getClass().getSimpleName().replace("Modifier", "")).collect(Collectors.toList()),
-                                s -> PokeBuilder.getModifiers().stream().filter(m -> m.getClass().getSimpleName().replace("Modifier", "").equals(s)).findFirst().get()
-                        )
+                        GenericArguments.withSuggestions(
+                                GenericArguments.string(Text.of("modifier")),
+                                PokeBuilder.getModifiers().stream().map(m -> m.getClass().getSimpleName().replace("Modifier", "").toLowerCase()).collect(Collectors.toList())
+                        ),
+                        GenericArguments.playerOrSource(Text.of("player"))
                 )
                 .executor(new GiveModifier())
                 .build();
@@ -33,8 +32,11 @@ public class GiveModifier implements CommandExecutor {
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) {
         Player player = args.<Player>getOne("player").get();
-        Modifier modifier = args.<Modifier>getOne("modifier").get();
-        player.getInventory().offer(modifier.getItemStack(player, null));
-        return CommandResult.empty();
+        String s = args.<String>getOne("modifier").get();
+        Modifier modifier = PokeBuilder.getModifiers().stream()
+                .filter(m -> m.getClass().getSimpleName().replace("Modifier", "").equalsIgnoreCase(s))
+                .findFirst()
+                .orElseThrow(() -> new Error("Could not find modifier with the name \"" + s + "\""));
+        return player.getInventory().offer(modifier.getItemStack(player, null)).getRejectedItems().isEmpty() ? CommandResult.empty() : CommandResult.empty();
     }
 }
