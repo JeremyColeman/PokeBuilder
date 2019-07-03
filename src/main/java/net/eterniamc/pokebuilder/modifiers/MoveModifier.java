@@ -9,11 +9,10 @@ import com.codehusky.huskyui.states.element.Element;
 import com.pixelmonmod.pixelmon.api.pokemon.Pokemon;
 import com.pixelmonmod.pixelmon.battles.attacks.Attack;
 import com.pixelmonmod.pixelmon.config.PixelmonItemsTMs;
+import com.pixelmonmod.pixelmon.enums.EnumSpecies;
 import net.eterniamc.pokebuilder.Configuration.Config;
 import net.eterniamc.pokebuilder.ModifierData;
 import net.eterniamc.pokebuilder.Utils;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.EnumHand;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.data.type.DyeColors;
 import org.spongepowered.api.entity.living.player.Player;
@@ -23,6 +22,7 @@ import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
@@ -66,9 +66,6 @@ public class MoveModifier implements Modifier {
                                                             return;
                                                         }
                                                         pixelmon.getMoveset().set(i, attack);
-                                                        if (((EntityPlayerMP) player).getHeldItemMainhand().getCount() == 1)
-                                                            ((EntityPlayerMP) player).setHeldItem(EnumHand.MAIN_HAND, net.minecraft.item.ItemStack.EMPTY);
-                                                        ((EntityPlayerMP) player).getHeldItemMainhand().shrink(1);
                                                     }),
                                                     ItemStack.builder()
                                                             .itemType((ItemType) PixelmonItemsTMs.TMs.get(0))

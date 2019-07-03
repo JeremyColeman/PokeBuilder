@@ -74,7 +74,7 @@ public class PokeBuilderGui {
             } else if (Config.pokemonCost >= 0 && Config.legendaryCost >= 0) {
                 main.addElement(new ActionableElement(
                         new RunnableAction(container, ActionType.CLOSE, "", c -> {
-                                ChatGuiHelper.addGUI("Enter the name of the pokemon you want, regular pokemon getCost(pokemon) $" + Config.pokemonCost + " and legendaries getCost(pokemon) $" + Config.legendaryCost, player, text -> {
+                            ChatGuiHelper.addGUI("Enter the name of the pokemon you want, regular pokemon cost $" + Config.pokemonCost + " and legendaries cost $" + Config.legendaryCost, player, text -> {
                                     EnumSpecies pokemon = EnumSpecies.getFromNameAnyCase(text.toPlain());
                                     if (pokemon == null) {
                                         Utils.sendPlayerError(player, "Invalid Pokemon");
