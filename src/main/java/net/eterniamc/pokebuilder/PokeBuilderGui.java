@@ -74,25 +74,34 @@ public class PokeBuilderGui {
             } else if (Config.pokemonCost >= 0 && Config.legendaryCost >= 0) {
                 main.addElement(new ActionableElement(
                         new RunnableAction(container, ActionType.CLOSE, "", c -> {
-                            double cash = Utils.getBal(player);
-                            if (cash < Config.pokemonCost && cash < Config.legendaryCost)
-                                Utils.sendPlayerError(player, "You can't afford this!");
-                            else {
                                 ChatGuiHelper.addGUI("Enter the name of the pokemon you want, regular pokemon getCost(pokemon) $" + Config.pokemonCost + " and legendaries getCost(pokemon) $" + Config.legendaryCost, player, text -> {
                                     EnumSpecies pokemon = EnumSpecies.getFromNameAnyCase(text.toPlain());
                                     if (pokemon == null) {
                                         Utils.sendPlayerError(player, "Invalid Pokemon");
                                         return;
                                     } else if (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> p == pokemon)) {
-                                        Utils.withdraw(player, Config.legendaryCost);
+                                        if (Config.legendaryCost == -1) {
+                                            Utils.sendPlayerError(player, "Creation of legendary Pokémon is disabled!");
+                                            return;
+                                        }
+                                        if (!Utils.withdrawBalance(player, Config.legendaryCost)) {
+                                            Utils.sendPlayerError(player, "You can't afford this!");
+                                            return;
+                                        }
                                     } else {
-                                        Utils.withdraw(player, Config.pokemonCost);
+                                        if (Config.pokemonCost == -1) {
+                                            Utils.sendPlayerError(player, "Creation of normal Pokémon is disabled!");
+                                            return;
+                                        }
+                                        if (!Utils.withdrawBalance(player, Config.pokemonCost)) {
+                                            Utils.sendPlayerError(player, "You can't afford this!");
+                                            return;
+                                        }
                                     }
                                     Pokemon pixelmon1 = Pixelmon.pokemonFactory.create(pokemon);
                                     pixelmon1.setOriginalTrainer((EntityPlayerMP) player);
                                     store.add(pixelmon1);
                                 });
-                            }
                         }),
                         ItemStack.builder()
                                 .itemType((ItemType) PixelmonItemsPokeballs.pokeBall)
@@ -164,9 +173,8 @@ public class PokeBuilderGui {
             } else {
                 builder.putElement(i / 2 * 9 + i % 2 * 8, new ActionableElement(
                         new RunnableAction(container, ActionType.NONE, "", c -> {
-                            if (modifier.getCost(pokemon) <= Utils.getBal(player)) {
+                            if (!Utils.withdrawBalance(player, modifier.getCost(pokemon))) {
                                 if (modifier.run(new ModifierData(pokemon, player, container))) {
-                                    Utils.withdraw(player, modifier.getCost(pokemon));
                                     Utils.sendPlayerMessage(player, modifier.getCost(pokemon) + " " + PokeBuilder.getCurrency().getPluralDisplayName().toPlain() + " have been withdrawn from your account");
                                     if (!player.getOpenInventory().isPresent())
                                         container.openState(player, "editor");

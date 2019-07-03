@@ -7,13 +7,19 @@ import org.spongepowered.api.data.type.DyeColors;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.EventContext;
+import org.spongepowered.api.event.cause.EventContextKeys;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.service.economy.EconomyService;
+import org.spongepowered.api.service.economy.account.UniqueAccount;
+import org.spongepowered.api.service.economy.transaction.ResultType;
+import org.spongepowered.api.service.economy.transaction.TransactionResult;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.serializer.TextSerializers;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 public class Utils {
     private static Text textStarterError = TextSerializers.FORMATTING_CODE.deserialize("&c&lPokeBuilder >&f ");
@@ -58,9 +64,18 @@ public class Utils {
         return sb.toString();
     }
 
-    public static void withdraw(Player player, double amount) {
-        EconomyService es = Sponge.getServiceManager().provideUnchecked(EconomyService.class);
-        es.getOrCreateAccount(player.getUniqueId()).ifPresent(a -> a.withdraw(PokeBuilder.getCurrency(), new BigDecimal(amount), Cause.of(EventContext.empty(), PokeBuilder.getInstance())));
+    public static boolean withdrawBalance(Player player, double amount) {
+        Optional<UniqueAccount> uniqueAccountOptional = getEconomy().getOrCreateAccount(player.getUniqueId());
+        if (!uniqueAccountOptional.isPresent()) return false;
+
+        PluginContainer pluginContainer = PokeBuilder.getContainer();
+        UniqueAccount uniqueAccount = uniqueAccountOptional.get();
+        BigDecimal requiredAmount = BigDecimal.valueOf(amount);
+        EventContext eventContext = EventContext.builder().add(EventContextKeys.PLUGIN, pluginContainer).build();
+
+        TransactionResult result = uniqueAccount.withdraw(getEconomy().getDefaultCurrency(), requiredAmount, Cause.of(eventContext, pluginContainer));
+
+        return result.getResult() == ResultType.SUCCESS;
     }
 
     public static double getBal(Player player) {

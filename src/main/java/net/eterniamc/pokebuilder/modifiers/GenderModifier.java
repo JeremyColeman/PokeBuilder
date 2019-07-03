@@ -45,9 +45,12 @@ public class GenderModifier implements Modifier {
         for (Gender gender : pixelmon.getBaseStats().malePercent < 0 ? Collections.singletonList(Gender.None) : Arrays.asList(Gender.Female, Gender.Male))
             builder.addElement(new ActionableElement(
                             new RunnableAction(container, ActionType.CLOSE, "", context -> {
+                                double cost = Config.genderModifierCost * (Arrays.stream(EnumSpecies.LEGENDARY_ENUMS).anyMatch(p -> pixelmon.getSpecies() == p) || pixelmon.getSpecies() == EnumSpecies.Ditto ? Config.legendaryOrDittoMultiplier : 1);
+                                if (data.getGui() != null && !Utils.withdrawBalance(player, cost)) {
+                                    Utils.sendPlayerError(player, "You can't afford this!");
+                                    return;
+                                }
                                 pixelmon.setGender(gender);
-                                if (data.getGui() != null)
-                                    Utils.withdraw(player, getCost(pixelmon));
                             }),
                             ItemStack.builder()
                                     .itemType((ItemType) PixelmonItemsBadges.voltageBadge)
